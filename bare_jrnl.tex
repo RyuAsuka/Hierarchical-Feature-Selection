@@ -50,6 +50,7 @@
 
 
 \documentclass[journal]{IEEEtran}
+\usepackage[OT1]{fontenc}
 %
 % If IEEEtran.cls has not been installed into the LaTeX system files,
 % manually specify the path to it like:
@@ -358,7 +359,6 @@
 \renewcommand{\algorithmicensure}{\textbf{Output:}}
 \usepackage{bm}
 \usepackage{booktabs}
-\usepackage[OT1]{fontenc}
 \newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}
 
 \newtheorem{definition}{Definition}
@@ -524,7 +524,7 @@ Thus the target of our algorithm is to find the best feature subset $\hat{S} \su
 
 \begin{figure*}[!htbp]
     \centering
-    \includegraphics[scale=0.8]{fig/Framework.pdf}
+    \includegraphics[scale=0.75]{fig/Framework.pdf}
     \caption{Detection Framework}
     \label{fig:framework}
 \end{figure*}
@@ -790,19 +790,19 @@ All experiments are running on a PC with a 4-core Intel i5-4460S 2.90GHz CPU and
         Feature Name    & Description \\
     \midrule
     Bwd Pkts/s          & Number of backward packets per second \\
-    Fwd Seg Size Min    & \tabincell{l}{Minimum segment size observed in the forward \\ direction} \\
+    Fwd Seg Size Min    & \tabincell{l}{Minimum segment size observed in \\ the forward direction} \\
     Init Fwd Win Byts   & \tabincell{l}{Number of bytes sent in initial window in the \\ forward direction} \\
     Flow Pkts/s         & \tabincell{l}{flow packets rate that is number of packets \\ transferred per second} \\
     ACK Flag Cnt        & Number of packets with ACK \\
     Flow IAT Mean       & Average time between two flows \\ 
-    Bwd IAT Max         & \tabincell{l}{Maximum time between two packets sent in the \\ backward direction} \\
-    Idle Mean           & Mean time a flow was idle before becoming active \\
+    Bwd IAT Max         & \tabincell{l}{Maximum time between two packets sent in \\ the backward direction} \\
+    Idle Mean           & \tabincell{l}{Mean time a flow was idle before becoming \\ active}\\
     Fwd Pkt Len Min     & Minimum size of packet in forward direction \\
     Flow Duration       & Flow duration \\
     Bwd Pkt Len Mean    & Mean size of packet in backward direction \\
     Pkt Len Min         & Minimum length of a flow \\
     Fwd Pkts/s          & Number of forward packets per second \\
-    Fwd IAT Tot         & \tabincell{l}{Total time between two packets sent in the forward \\ direction} \\
+    Fwd IAT Tot         & \tabincell{l}{Total time between two packets sent in the \\ forward direction} \\
     \bottomrule
     \end{tabular}
 \end{table}
@@ -853,7 +853,7 @@ The metrics of model include accuracy, precision, recall and f1-score. The test 
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[scale=0.5]{fig/metrics.pdf}
+    \includegraphics[scale=0.4]{fig/metrics.pdf}
     \caption{Accuracy, Precision, Recall and F1-score}
     \label{fig:metrics}
 \end{figure}
