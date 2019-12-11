@@ -779,11 +779,20 @@ The evaluations consists of two parts: the first part is comparison of training 
 
 \subsection{Experiment Setup}
 
-All experiments are running on a PC with a 4-core Intel i5-4460S 2.90GHz CPU and 16GB memory. The chi-square method is implemented in a Python library scikit-learn\cite{sklearn}.
+All experiments are running on a quad-core Intel PC with 2.90GHz CPU and 16 GB of memory. Our algorithms are implemented in Python 3.7 and the chi-square method is implemented in a Python library scikit-learn\cite{sklearn}.
 
 \subsection{Experiment Results}
 
 \subsubsection{Feature subset}
+
+Table \ref{tab:selected-features} shows the features selected by our method and their descriptions. From Table \ref{tab:selected-features} we make the following observations:
+
+\begin{enumerate}
+	\item The sizes of packets are important. In the top 10 important features, there are 4 features about packet sizes. Considering the MTU of an IP network, a flow shouldn’t contain too large packets. If the flow meter observes a flow contain large packets, the probability that this stream is an attack stream will be high. 
+    \item Another type of important features is the count of packets. In benign flows, the number of packets often small because current network services intend to use short connection to complete the interaction with each other, in order to not occupy the bandwidth resources of the network. However, the attackers intend to send large amounts of packets to exhaust the connection resources and prevent connection from normal users. 
+    \item Time-related features are also important. As we mentioned before, benign services intend to use short connection, while attackers may use long connection. A typical attack is to control the interval of any two flows which is a little shorter than the TCP waiting time. It prevents the TCP connection closing and finally exhaust the connection resources. In practise, time-related features should be considered with the count of packets together.
+    \item Some miscellaneous. In our result, the ACK Flag count is selected in our feature subset. In fact the number of ACKs accounts for a large proportion of the TCP flow. % TODO: analysis detailed representation of ACK Flag cnt or delete it.
+\end{enumerate} 
 
 \begin{table}[!htpb]
     \caption{Selected Features and Their Description}
