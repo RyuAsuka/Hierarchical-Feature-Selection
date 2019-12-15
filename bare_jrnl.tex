@@ -519,6 +519,17 @@ The remaining part of the paper is organized as follows: Section \ref{sec:relate
 \section{Related Works}
 \label{sec:related}
 
+Different approaches have been proposed to apply to feature selection to improve the performance of feature selection. H. C. Law et al. propose an expectation-maximization (EM) algorithm to estimate the importance of different features and the best number of components for Gaussian-mixture clustering\cite{Law2004}. EM can avoid running EM many times with different numbers of components and different feature subsets, and can achieve better performance than using all the available features for clustering. Yang et al.\cite{Yang2018} present a modified Network Maximal Correlation (NMC) model as a measure to capture correlation relationships between a characteristic variable and a label variable. The results show the method can obtain an optimal subset of features with faster speed, maximum correlation and minimal redundancy through numerical simulation.
+
+In addition, various of new feature selection approaches have been presented in the past years. Wu et al. \cite{Wu2017}propose a new feature selection algorithm based on features unit (FU), which uses entropy of information to obtain features units and sort them to selected the appropriate one. The results in the UCI datasets show that the FU performs better than MIFS-U and mRMR on the whole. Yassine et al.\cite{Yassine2017} propose a new hybrid filter-wrapper algorithm of feature selection based on pairwise feature selection, which benefits from the speed up and the ease of use of filters and the good performance of wrappers. The results indicate that the selected subset of features by the proposed approach has a good classification performance. Yang et al. \cite{Yang2018a} propose a novel unsupervised feature selection method where constructing similarity matrix and performing feature selection are together incorporated into a coherent model. The results show the proposed approach has better performance to solve the objective function and extensive experiments on face images and benchmark datasets. Ke et al. \cite{Ke2018} propose a redundant window-based optimal feature subset discover algorithm for feature selection, which use the growth algorithm to discover the relevant features and use the shrink algorithm to eliminate the redundant ones. The results show that the method has a good performance in terms of accuracy and scalability, and improves the execution efficiency of feature selection and traffic classification.
+
+Liu et al. \cite{Liu2018} propose a differentially private ensemble feature selection algorithm based on output perturbation. The results also demonstrate the high performance under certain privacy preservation degree of the method. Ferriyan et al. \cite{Ferriyan2017} propose a new feature selections using Genetic Algorithm to find the optimal features from NSL-KDD Cup 99 dataset, which use one-point crossover for the Genetic Algorithm parameters instead of two-point crossover. The results show the proposed approach performs better in classification rate and the training time compared to several other classifiers. Han et al. \cite{Han2020} propose a novel unsupervised feature selection method via the graph matrix learning and the low-dimensional space learning to obtain their individually optimized result. The results on real datasets verified that the method achieved the best classification performance compared to the state-of-the-art feature selection methods.
+
+Feature selection also have been broadly used in processing traffic data. Shi et al. \cite{Shi2017} propose a novel feature extraction and selection approach to provide the optimal and robust features for traffic classification, which based on multifractal features, the observation of the multifractal features and the analysis of PCABFS. The results show the approach achieves better classification performance, lower runtime performance and more effective for real-time traffic classification compared to the TLS features. Moreover, the authors then propose a new feature optimization approach based on deep learning and Feature Selection (FS) techniques\cite{Shi2018} to provide the optimal and robust features for traffic data sets. The results show the approach achieves the best classification performance and relatively higher runtime performance compared with the approaches used in the previous work.
+
+Moreover, there are different feature selection methods aim to process different kinds of data. Dong et al.\cite{Dong2017} propose a fine grained classification scheme which based on a hierarchical kNN classifier for network video traffic. The results show that the proposed method outperforms existing methods applying commonly used flow statistical features. Taskin et al. \cite{Taskin2017} presented a novel feature-selection method based on High Dimensional Model Representation (HDMR) to analyze and test in classification of hyperspectral images. The results show that the proposed approach can be used as a fast and efficient feature-selection method yielding very competitive results compared to the state-of-art feature-selection methods. Valadi et al.\cite{Valadi2019} propose a new modification of attribute selection with multiple label which can be advantageously used for handling high dimensional multi-level datasets. The results show the proposed approach reduces complexity and computational run time.
+
+
 \section{Problem Definition}
 \label{sec:problem}
 
@@ -547,7 +558,7 @@ In following subsections the details and algorithms of proposed methods are desc
 
 \subsection{Data Set and Preprocessing}
 
-The data set being studied is CIC-IDS-2018\cite{cic2018}. The data set includes seven different attack scenarios: Brute-force, Heartbleed, Botnet, DoS, DDoS, Web attacks, and infiltration of the network from inside. The data set includes the captures network traffic and system logs of each machine, along with 76 features extracted from the captured traffic using CICFlowMeter-V3\cite{cicflowmeter}. These 76 features are shown in Table \ref{tab:features}.
+The data set being studied is CIC-IDS-2018\cite{cic2018}. The data set includes seven different attack scenarios: Brute-force, Heartbleed, Botnet, DoS, DDoS, Web attacks, and infiltration of the network from inside. The data set includes the captured network traffic and system logs of each machine, along with 76 features extracted from the captured traffic using CICFlowMeter-V3\cite{cicflowmeter}. These 76 features are shown in Table \ref{tab:features}.
 
 \begin{table*}[!htpb]
     \caption{76 Features of CIC-IDS-2018 data set}
@@ -590,7 +601,7 @@ Our preprocessing strategy is described as follows:
 \subsubsection{Remove some nominal features and drop all rows contain missing value}
 The target of this paper is to find the decisive statistical features which can determine whether a network flow is an attack. So the traditional 5-tuple, i.e. source IP address, source port, destination IP address, destination port and protocol is as useless as the timestamp, because in this paper we assumed that attack may happen at any time and from any place. We remove these nominal features to focus on other statistical features. 
 
-Note that the removed features are only in the context of this paper. These feature may be useful in other detection methods.
+Note that the removed features are only in the context of this paper. These features may be useful in other detection methods.
 
 \subsubsection{Remove all zero-variance features}
 
@@ -598,7 +609,7 @@ Variance is a physical quantity used to describe the degree of discreteness of a
 
 \subsubsection{Encode labels}
 
-The type of elements in column ``Label'' is text. It is not a good type because it may decrease the efficiency when process it in our algorithm. We should encoder them to numeric code.
+The type of elements in column ``Label'' is text. It is not a good type because it may decrease the efficiency when process it in our algorithm. We encoder them to numeric code.
 
 \subsection{Layer 1: Feature Clustering Algorithm based on Pearson Correlation Coefficient}
 
