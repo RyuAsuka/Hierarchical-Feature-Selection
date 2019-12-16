@@ -529,14 +529,6 @@ Feature selection also have been broadly used in processing traffic data. Shi et
 
 Moreover, there are different feature selection methods aim to process different kinds of data. Dong et al.\cite{Dong2017} propose a fine grained classification scheme which based on a hierarchical kNN classifier for network video traffic. The results show that the proposed method outperforms existing methods applying commonly used flow statistical features. Taskin et al. \cite{Taskin2017} presented a novel feature-selection method based on High Dimensional Model Representation (HDMR) to analyze and test in classification of hyperspectral images. The results show that the proposed approach can be used as a fast and efficient feature-selection method yielding very competitive results compared to the state-of-art feature-selection methods. Valadi et al.\cite{Valadi2019} propose a new modification of attribute selection with multiple label which can be advantageously used for handling high dimensional multi-level datasets. The results show the proposed approach reduces complexity and computational run time.
 
-
-\section{Problem Definition}
-\label{sec:problem}
-
-The feature selection problem\cite{Maza2018} can be described as a 6-tuple $FS=\{D, F, C, S, fs, E\}$, where $D=\{i_1,i_2,\ldots,i_m\}$ is the dataset with $m$ instances. $F=\{f_1,f_2,\ldots,f_n\}$ is the feature set of $D$ with $n$ features. $C=\{c_1, c_2, \ldots, c_k\}$ is the class label set with $k$ labels. $S=\{s_1, s_2, \ldots, s_l\}, \ l=2^n-1$ is the search space, which contains all subsets can be constructed from $F$ with $s_i=\{f_j, f_k, \ldots, f_l\}, \ (1 \leqslant j \neq k \neq l \leqslant n)$. $E$ is the evaluation measure and $fs$ represents the function of process of feature selection: $fs: F \rightarrow S$.
-
-Thus the target of our algorithm is to find the best feature subset $\hat{S} \subset S$ subject to a best evaluation measure $E$.
-
 \begin{figure*}[!htbp]
     \centering
     \includegraphics[scale=0.75]{fig/Framework.pdf}
@@ -544,13 +536,35 @@ Thus the target of our algorithm is to find the best feature subset $\hat{S} \su
     \label{fig:framework}
 \end{figure*}
 
+\section{Problem Definition}
+\label{sec:problem}
+We denote 
+$$D=\left(\begin{array}{llll}
+    \bm{x}_1 & \bm{x}_2 & \ldots & \bm{x}_m
+\end{array}\right)^T$$
+as the data set with $m$ instances, where 
+$$\bm{x}_i = \left(\begin{array}{lllll}
+    f_{1i} & f_{2i} & \ldots & f_{ni} & c_i
+\end{array}\right)$$
+where $f_{ji}$ is the value of $j$th feautre of vector $\bm{x_i}$, and $f_j \in F = \{f_1, f_2, \ldots, f_n\}$ is the feature set. $c_i$ is the class label of $\bm{x}_i$ and $c_i \in C = \{c_1, c_2, \ldots, c_k\}$, where $C$ is the set of class labels.
+
+The feature selection problem\cite{Maza2018} can be described as a 6-tuple $FS=\langle D, F, C, S, fs, E \rangle$, where $D, F, C$ are data set, feature set and class label set respectively. $S=\{s_1, s_2, \ldots, s_l\}, \ l=2^n-1$ is the search space, which contains all subsets can be constructed from $F$ with $s_i=\{f_j, f_k, \ldots, f_l\}, \ (1 \leqslant j \neq k \neq l \leqslant n)$. $E$ is the evaluation measure and $fs$ represents the function of process of feature selection: $fs: F \rightarrow S$.
+
+The target of the function $fs$, which is the proposed algorithm, is to find the best feature subset $\hat{F} \subset F$. The feature subset should satisfy following conditions:
+\begin{itemize}
+    \item Every feature $f \in \hat{F}$ is independent with others. It means that every $f$ should not be calculated from other features.
+    \item The feature subset $\hat{F}$ is the least set of $s_l$ with given count of features $l$. This feature subset should has enough information to determine whether a flow is an attack or not. If the feature set add or remove any other features, the result of detection will deteriorate.
+\end{itemize}
+
+
+
 \section{Hierarchical Feature Selection Method}
 \label{sec:methods}
 
 \subsection{Overview}
 
-Firstly the system is shown as Fig. \ref{fig:framework}. 
-The proposed method is the first block in the figure, and it includes three steps or layers: The first step is preprocessing, which makes the data set to a better form to be processed in next two steps. The second step is feature clustering, which puts all features with potential linear correlation into the same cluster, then it finds all cluster center as the representative. The third step is feature ranking, which further rank all features selected in step 2 and choose the top $k$ features as the final feature set. 
+The system framework of this paper is shown as Fig. \ref{fig:framework}. 
+The proposed method is the first block in the figure, and it contains three steps or layers: The first step is preprocessing, which cleans data set and makes it to a better form to be processed in next two steps. The second step is feature clustering, which puts all features with potential linear correlation into the same cluster, then all cluster centers are chosen as the representative of every clusters. The third step is feature ranking, which further rank all features selected in step 2 and choose the top $k$ features as the final feature set. 
 
 After the three-steps processing, the refined data subset is divided into training set and test set, then they are trained and tested via decision tree classifier and our detection model is generated.
 
@@ -558,48 +572,111 @@ In following subsections the details and algorithms of proposed methods are desc
 
 \subsection{Data Set and Preprocessing}
 
-The data set being studied is CIC-IDS-2018\cite{cic2018}. The data set includes seven different attack scenarios: Brute-force, Heartbleed, Botnet, DoS, DDoS, Web attacks, and infiltration of the network from inside. The data set includes the captured network traffic and system logs of each machine, along with 76 features extracted from the captured traffic using CICFlowMeter-V3\cite{cicflowmeter}. These 76 features are shown in Table \ref{tab:features}.
+The data set being studied is CIC-IDS-2018\cite{cic2018}. 
+It is generated on a simulated network topology on the AWS computing platform. The network topology is shown as Figure \ref{fig:topology}. It has 5 subnet and 1 attacker network.  
+The data set consists of seven different attack scenarios: Brute-force, Heartbleed, Botnet, DoS, DDoS, Web attacks, and infiltration of the network from inside. It includes the captured network traffic and system logs of each machine, along with 76 features extracted from the captured traffic using CICFlowMeter-V3\cite{cicflowmeter}. These 76 features are shown in Table \ref{tab:features}.
 
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[scale=0.5]{fig/Topology.pdf}
+    \caption{Simulated network topology on AWS computing platform}
+    \label{fig:topology}
+\end{figure}
+
+% \begin{table*}[!htpb]
+%     \caption{76 Features of CIC-IDS-2018 data set}
+%     \label{tab:features}
+%     \centering
+%     \begin{tabular}{cccc}
+%     \toprule
+%     \multicolumn{4}{c}{Features} \\
+%     \midrule
+%     Flow Duration &      Tot Fwd Pkts &        Tot Bwd Pkts &        TotLen Fwd Pkts \\
+%     TotLen Bwd Pkts &    Fwd Pkt Len Max &     Fwd Pkt Len Min &     Fwd Pkt Len Mean \\
+%     Fwd Pkt Len Std &    Bwd Pkt Len Max &     Bwd Pkt Len Min &     Bwd Pkt Len Mean \\
+%     Bwd Pkt Len Std &    Flow Byts/s &         Flow Pkts/s &         Flow IAT Mean \\
+%     Flow IAT Std &       Flow IAT Max &        Flow IAT Min &        Fwd IAT Tot \\
+%     Fwd IAT Mean &       Fwd IAT Std &         Fwd IAT Max &         Fwd IAT Min \\
+%     Bwd IAT Tot &        Bwd IAT Mean &        Bwd IAT Std &         Bwd IAT Max \\
+%     Bwd IAT Min &        Fwd PSH Flags &       Bwd PSH Flags &       Fwd URG Flags \\
+%     Bwd URG Flags &      Fwd Header Len &      Bwd Header Len &      Fwd Pkts/s \\
+%     Bwd Pkts/s &         Pkt Len Min &         Pkt Len Max &         Pkt Len Mean \\
+%     Pkt Len Std &        Pkt Len Var &         FIN Flag Cnt &        SYN Flag Cnt \\
+%     RST Flag Cnt &       PSH Flag Cnt &        ACK Flag Cnt &        URG Flag Cnt \\
+%     CWE Flag Count &     ECE Flag Cnt &        Down/Up Ratio &       Pkt Size Avg \\
+%     Fwd Seg Size Avg &   Bwd Seg Size Avg &    Fwd Byts/b Avg &      Fwd Pkts/b Avg \\
+%     Fwd Blk Rate Avg &   Bwd Byts/b Avg &      Bwd Pkts/b Avg &      Bwd Blk Rate Avg \\
+%     Subflow Fwd Pkts &   Subflow Fwd Byts &    Subflow Bwd Pkts &    Subflow Bwd Byts \\
+%     Init Fwd Win Byts &  Init Bwd Win Byts &   Fwd Act Data Pkts &   Fwd Seg Size Min \\
+%     Active Mean &        Active Std &          Active Max &          Active Min \\
+%     Idle Mean &          Idle Std &            Idle Max &            Idle Min \\
+%     \bottomrule
+%     \end{tabular}
+
+% \end{table*}
 \begin{table*}[!htpb]
-    \caption{76 Features of CIC-IDS-2018 data set}
+    \caption{76 features of CIC-IDS-2018 data set}
     \label{tab:features}
     \centering
-    \begin{tabular}{cccc}
+    \begin{tabular}{llll}
     \toprule
-    \multicolumn{4}{c}{Features} \\
+        Feature Name & Description & Feature Name & Description \\
     \midrule
-    Flow Duration &      Tot Fwd Pkts &        Tot Bwd Pkts &        TotLen Fwd Pkts \\
-    TotLen Bwd Pkts &    Fwd Pkt Len Max &     Fwd Pkt Len Min &     Fwd Pkt Len Mean \\
-    Fwd Pkt Len Std &    Bwd Pkt Len Max &     Bwd Pkt Len Min &     Bwd Pkt Len Mean \\
-    Bwd Pkt Len Std &    Flow Byts/s &         Flow Pkts/s &         Flow IAT Mean \\
-    Flow IAT Std &       Flow IAT Max &        Flow IAT Min &        Fwd IAT Tot \\
-    Fwd IAT Mean &       Fwd IAT Std &         Fwd IAT Max &         Fwd IAT Min \\
-    Bwd IAT Tot &        Bwd IAT Mean &        Bwd IAT Std &         Bwd IAT Max \\
-    Bwd IAT Min &        Fwd PSH Flags &       Bwd PSH Flags &       Fwd URG Flags \\
-    Bwd URG Flags &      Fwd Header Len &      Bwd Header Len &      Fwd Pkts/s \\
-    Bwd Pkts/s &         Pkt Len Min &         Pkt Len Max &         Pkt Len Mean \\
-    Pkt Len Std &        Pkt Len Var &         FIN Flag Cnt &        SYN Flag Cnt \\
-    RST Flag Cnt &       PSH Flag Cnt &        ACK Flag Cnt &        URG Flag Cnt \\
-    CWE Flag Count &     ECE Flag Cnt &        Down/Up Ratio &       Pkt Size Avg \\
-    Fwd Seg Size Avg &   Bwd Seg Size Avg &    Fwd Byts/b Avg &      Fwd Pkts/b Avg \\
-    Fwd Blk Rate Avg &   Bwd Byts/b Avg &      Bwd Pkts/b Avg &      Bwd Blk Rate Avg \\
-    Subflow Fwd Pkts &   Subflow Fwd Byts &    Subflow Bwd Pkts &    Subflow Bwd Byts \\
-    Init Fwd Win Byts &  Init Bwd Win Byts &   Fwd Act Data Pkts &   Fwd Seg Size Min \\
-    Active Mean &        Active Std &          Active Max &          Active Min \\
-    Idle Mean &          Idle Std &            Idle Max &            Idle Min \\
+        fl dur          & \tabincell{l}{Flow duration} & pkt len max     & \tabincell{l}{Maximum length of a flow} \\
+        tot fw pk       & \tabincell{l}{Total packets in the forward direction} & pkt len avg     & \tabincell{l}{Mean length of a flow} \\
+        tot bw pk       & \tabincell{l}{Total packets in the backward direction} & pkt len std     & \tabincell{l}{Standard deviation length of a flow} \\
+        tot l fw pkt    & \tabincell{l}{Total size of packet in forward direction} & pkt len va      & \tabincell{l}{Minimum inter-arrival time of packet} \\
+        fw pkt l max    & \tabincell{l}{Maximum size of packet in forward direction} & fin cnt         & \tabincell{l}{Number of packets with FIN} \\
+        fw pkt l min    & \tabincell{l}{Minimum size of packet in forward direction} & syn cnt         & \tabincell{l}{Number of packets with SYN} \\
+        fw pkt l avg    & \tabincell{l}{Average size of packet in forward direction} & rst cnt         & \tabincell{l}{Number of packets with RST} \\
+        fw pkt l std    & \tabincell{l}{Standard deviation size of packet in forward \\ direction} & pst cnt         & \tabincell{l}{Number of packets with PUSH} \\
+        Bw pkt l max    & \tabincell{l}{Maximum size of packet in backward direction} & ack cnt         & \tabincell{l}{Number of packets with ACK} \\
+        Bw pkt l min    & \tabincell{l}{Minimum size of packet in backward direction} & urg cnt         & \tabincell{l}{Number of packets with URG} \\
+        Bw pkt l avg    & \tabincell{l}{Mean size of packet in backward direction} & cwe cnt         & \tabincell{l}{Number of packets with CWE} \\
+        Bw pkt l std    & \tabincell{l}{Standard deviation size of packet in backward \\ direction} & ece cnt         & \tabincell{l}{Number of packets with ECE} \\
+        fl byt s        & \tabincell{l}{flow byte rate that is number of packets \\ transferred per second} & down up ratio   & \tabincell{l}{Download and upload ratio} \\
+        fl pkt s        & \tabincell{l}{flow packets rate that is number of packets \\ transferred per second} &  pkt size avg    & \tabincell{l}{Average size of packet} \\
+        fl iat avg      & \tabincell{l}{Average time between two flows} & fw seg avg      & \tabincell{l}{Average size observed in the forward direction} \\
+        fl iat std      & \tabincell{l}{Standard deviation time two flows} & bw seg avg      & \tabincell{l}{Average size observed in the backward direction} \\
+        fl iat max      & \tabincell{l}{Maximum time between two flows} & fw byt blk avg  & \tabincell{l}{Average number of bytes bulk rate in \\ the forward direction} \\
+        fl iat min      & \tabincell{l}{Minimum time between two flows} & fw pkt blk avg  & \tabincell{l}{Average number of packets bulk rate in \\ the forward direction} \\
+        fw iat tot      & \tabincell{l}{Total time between two packets sent in the \\ forward direction} & fw blk rate avg & \tabincell{l}{Average number of bulk rate in the \\ forward direction} \\
+        fw iat avg      & \tabincell{l}{Mean time between two packets sent in the \\ forward direction} & bw byt blk avg  & \tabincell{l}{Average number of bytes bulk rate in \\ the backward direction} \\
+        fw iat std      & \tabincell{l}{Standard deviation time between two packets \\ sent in the forward direction} & bw pkt blk avg  & \tabincell{l}{Average number of packets bulk rate in \\ the backward direction} \\
+        fw iat max      & \tabincell{l}{Maximum time between two packets sent in \\ the forward direction} & bw blk rate avg & \tabincell{l}{Average number of bulk rate in \\ the backward direction} \\ 
+        fw iat min      & \tabincell{l}{Minimum time between two packets sent in \\ the forward direction} & subfl fw pk     & \tabincell{l}{The average number of packets in \\ a sub flow in the forward direction} \\
+        bw iat tot      & \tabincell{l}{Total time between two packets sent in \\ the backward direction} & subfl fw byt    & \tabincell{l}{The average number of bytes in \\ a sub flow in the forward direction} \\
+        bw iat avg      & \tabincell{l}{Mean time between two packets sent in \\ the backward direction} & subfl bw pkt    & \tabincell{l}{The average number of packets in \\ a sub flow in the backward direction} \\ 
+        bw iat std      & \tabincell{l}{Standard deviation time between two packets \\ sent in the backward direction} & subfl bw byt    & \tabincell{l}{The average number of bytes in \\a sub flow in the backward direction} \\
+        bw iat max      & \tabincell{l}{Maximum time between two packets sent in \\ the backward direction} & fw win byt      & \tabincell{l}{Number of bytes sent in initial window \\ in the forward direction} \\
+        bw iat min      & \tabincell{l}{Minimum time between two packets sent in \\ the backward direction} &  bw win byt      & \tabincell{l}{Number of bytes sent in initial window in \\ the backward direction} \\
+        fw psh flag     & \tabincell{l}{Number of times the PSH flag was set in \\ packets travelling in the forward direction \\ (0 for UDP)} & Fw act pkt      & \tabincell{l}{Number of packets with at least 1 byte of TCP data \\ payload in the forward direction} \\
+        bw psh flag     & \tabincell{l}{Number of times the PSH flag was set in \\ packets travelling in the backward direction \\ (0 for UDP)} & fw seg min      & \tabincell{l}{Minimum segment size observed in the \\ forward direction} \\
+        fw urg flag     & \tabincell{l}{Number of times the URG flag was set in \\ packets travelling in the forward direction \\ (0 for UDP)} & atv avg         & \tabincell{l}{Mean time a flow was active before becoming idle} \\
+        bw urg flag     & \tabincell{l}{Number of times the URG flag was set in \\ packets travelling in the backward direction \\ (0 for UDP)} & atv std         & \tabincell{l}{Standard deviation time a flow was active before \\ becoming idle} \\
+        fw hdr len      & \tabincell{l}{Total bytes used for headers in the forward \\ direction} & atv max         & \tabincell{l}{Maximum time a flow was active before becoming idle} \\
+        bw hdr len      & \tabincell{l}{Total bytes used for headers in the forward \\ direction} & atv min         & \tabincell{l}{Minimum time a flow was active before becoming idle} \\
+        fw pkt s        & \tabincell{l}{Number of forward packets per second} & idl avg         & \tabincell{l}{Mean time a flow was idle before becoming active} \\
+        bw pkt s        & \tabincell{l}{Number of backward packets per second} & idl std         & \tabincell{l}{Standard deviation time a flow was idle before \\becoming active} \\
+        pkt len min     & \tabincell{l}{Minimum length of a flow} & idl max         & \tabincell{l}{Maximum time a flow was idle before becoming \\ active} \\
+        & & idl min         & \tabincell{l}{Minimum time a flow was idle before becoming \\ active} \\
     \bottomrule
     \end{tabular}
-
 \end{table*}
 
-In order to detect all types of attacks as much as possible, we integrated the network traffic that was originally scattered in each day's data, and extracted 20\% of the data as our main data set while maintaining the label ratio. At the same time, in order to ensure the generalization ability of the model, we randomly select and generate data sets as many times as possible.
+In order to detect all types of attacks as much as possible, we integrated the network traffic data that was originally scattered in each day, and extracted 20\% of the data as our main data set while maintaining the label ratio. At the same time, in order to ensure the generalization ability of the model, we randomly select and generate data sets as many times as possible. Finally we get 10 stratified-sampled data set files. 
 
-At this moment, the data set is still unavailable because there are some useless nominal features which are not suitable for statistical analyzing, and there may be missing values in the data set. We must remove these features to prevent them interfere proposed algorithms.
+At this moment, the data set is still unavailable because there are some useless nominal features which are not suitable for statistical analyzing, and there may be missing values in the data set. We must remove these features to prevent them interfering proposed algorithms.
 
 Our preprocessing strategy is described as follows:
 
-\subsubsection{Remove some nominal features and drop all rows contain missing value}
-The target of this paper is to find the decisive statistical features which can determine whether a network flow is an attack. So the traditional 5-tuple, i.e. source IP address, source port, destination IP address, destination port and protocol is as useless as the timestamp, because in this paper we assumed that attack may happen at any time and from any place. We remove these nominal features to focus on other statistical features. 
+\subsubsection{Data cleaning}
+The target of this paper is to find the decisive statistical features which can determine whether a network flow is an attack. 
+So the traditional 5-tuple, i.e. source IP address, source port, destination IP address, destination port and protocol cannot be used to our algorithm. 
+These nominal features will be removed to focus on other statistical features. 
+We also remove timestamp feature because our algorithm focuses on the type of attacks rather than the time characteristics.
+
+Many missing values also exist in the data set. There are many reasons for missing values. Some flows cannot be calculated in certain features. For example, if the duration time of a flow is too small even equals 0, the values of two features named ``Flow Bytes/s'' and ``Flow Pkts/s'' can be NaN or infinity. It is a difficult work to examine every missing value, and they cannot be filled using interpolation because the data set is composed randomly. In this situation, we remove these rows containing missing values to ensure our algorithm running normally.
 
 Note that the removed features are only in the context of this paper. These features may be useful in other detection methods.
 
