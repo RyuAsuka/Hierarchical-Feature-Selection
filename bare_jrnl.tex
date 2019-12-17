@@ -359,7 +359,7 @@
 \renewcommand{\algorithmicensure}{\textbf{Output:}}
 \usepackage{bm}
 \usepackage{booktabs}
-\newcommand{\tabincell}[2]{\begin{tabular}{@{}#1@{}}#2\end{tabular}}
+\newcommand{\tabincell}[2]{\begin{tabular}[t]{@{}#1@{}}#2\end{tabular}}
 
 \newtheorem{definition}{Definition}
 
@@ -536,7 +536,7 @@ Moreover, there are different feature selection methods aim to process different
     \label{fig:framework}
 \end{figure*}
 
-\section{Problem Definition}
+\section{Problem Definition and Solution}
 \label{sec:problem}
 We denote 
 $$D=\left(\begin{array}{llll}
@@ -555,6 +555,8 @@ The target of the function $fs$, which is the proposed algorithm, is to find the
     \item Every feature $f \in \hat{F}$ is independent with others. It means that every $f$ should not be calculated from other features.
     \item The feature subset $\hat{F}$ is the least set of $s_l$ with given count of features $l$. This feature subset should has enough information to determine whether a flow is an attack or not. If the feature set add or remove any other features, the result of detection will deteriorate.
 \end{itemize}
+
+% TODO: Add Solution
 
 
 
@@ -583,85 +585,36 @@ The data set consists of seven different attack scenarios: Brute-force, Heartble
     \label{fig:topology}
 \end{figure}
 
-% \begin{table*}[!htpb]
-%     \caption{76 Features of CIC-IDS-2018 data set}
-%     \label{tab:features}
-%     \centering
-%     \begin{tabular}{cccc}
-%     \toprule
-%     \multicolumn{4}{c}{Features} \\
-%     \midrule
-%     Flow Duration &      Tot Fwd Pkts &        Tot Bwd Pkts &        TotLen Fwd Pkts \\
-%     TotLen Bwd Pkts &    Fwd Pkt Len Max &     Fwd Pkt Len Min &     Fwd Pkt Len Mean \\
-%     Fwd Pkt Len Std &    Bwd Pkt Len Max &     Bwd Pkt Len Min &     Bwd Pkt Len Mean \\
-%     Bwd Pkt Len Std &    Flow Byts/s &         Flow Pkts/s &         Flow IAT Mean \\
-%     Flow IAT Std &       Flow IAT Max &        Flow IAT Min &        Fwd IAT Tot \\
-%     Fwd IAT Mean &       Fwd IAT Std &         Fwd IAT Max &         Fwd IAT Min \\
-%     Bwd IAT Tot &        Bwd IAT Mean &        Bwd IAT Std &         Bwd IAT Max \\
-%     Bwd IAT Min &        Fwd PSH Flags &       Bwd PSH Flags &       Fwd URG Flags \\
-%     Bwd URG Flags &      Fwd Header Len &      Bwd Header Len &      Fwd Pkts/s \\
-%     Bwd Pkts/s &         Pkt Len Min &         Pkt Len Max &         Pkt Len Mean \\
-%     Pkt Len Std &        Pkt Len Var &         FIN Flag Cnt &        SYN Flag Cnt \\
-%     RST Flag Cnt &       PSH Flag Cnt &        ACK Flag Cnt &        URG Flag Cnt \\
-%     CWE Flag Count &     ECE Flag Cnt &        Down/Up Ratio &       Pkt Size Avg \\
-%     Fwd Seg Size Avg &   Bwd Seg Size Avg &    Fwd Byts/b Avg &      Fwd Pkts/b Avg \\
-%     Fwd Blk Rate Avg &   Bwd Byts/b Avg &      Bwd Pkts/b Avg &      Bwd Blk Rate Avg \\
-%     Subflow Fwd Pkts &   Subflow Fwd Byts &    Subflow Bwd Pkts &    Subflow Bwd Byts \\
-%     Init Fwd Win Byts &  Init Bwd Win Byts &   Fwd Act Data Pkts &   Fwd Seg Size Min \\
-%     Active Mean &        Active Std &          Active Max &          Active Min \\
-%     Idle Mean &          Idle Std &            Idle Max &            Idle Min \\
-%     \bottomrule
-%     \end{tabular}
-
-% \end{table*}
 \begin{table*}[!htpb]
-    \caption{76 features of CIC-IDS-2018 data set}
+    \caption{76 Features of CIC-IDS-2018 data set}
     \label{tab:features}
     \centering
     \begin{tabular}{llll}
     \toprule
-        Feature Name & Description & Feature Name & Description \\
+    \multicolumn{4}{c}{Features} \\
     \midrule
-        fl dur          & \tabincell{l}{Flow duration} & pkt len max     & \tabincell{l}{Maximum length of a flow} \\
-        tot fw pk       & \tabincell{l}{Total packets in the forward direction} & pkt len avg     & \tabincell{l}{Mean length of a flow} \\
-        tot bw pk       & \tabincell{l}{Total packets in the backward direction} & pkt len std     & \tabincell{l}{Standard deviation length of a flow} \\
-        tot l fw pkt    & \tabincell{l}{Total size of packet in forward direction} & pkt len va      & \tabincell{l}{Minimum inter-arrival time of packet} \\
-        fw pkt l max    & \tabincell{l}{Maximum size of packet in forward direction} & fin cnt         & \tabincell{l}{Number of packets with FIN} \\
-        fw pkt l min    & \tabincell{l}{Minimum size of packet in forward direction} & syn cnt         & \tabincell{l}{Number of packets with SYN} \\
-        fw pkt l avg    & \tabincell{l}{Average size of packet in forward direction} & rst cnt         & \tabincell{l}{Number of packets with RST} \\
-        fw pkt l std    & \tabincell{l}{Standard deviation size of packet in forward \\ direction} & pst cnt         & \tabincell{l}{Number of packets with PUSH} \\
-        Bw pkt l max    & \tabincell{l}{Maximum size of packet in backward direction} & ack cnt         & \tabincell{l}{Number of packets with ACK} \\
-        Bw pkt l min    & \tabincell{l}{Minimum size of packet in backward direction} & urg cnt         & \tabincell{l}{Number of packets with URG} \\
-        Bw pkt l avg    & \tabincell{l}{Mean size of packet in backward direction} & cwe cnt         & \tabincell{l}{Number of packets with CWE} \\
-        Bw pkt l std    & \tabincell{l}{Standard deviation size of packet in backward \\ direction} & ece cnt         & \tabincell{l}{Number of packets with ECE} \\
-        fl byt s        & \tabincell{l}{flow byte rate that is number of packets \\ transferred per second} & down up ratio   & \tabincell{l}{Download and upload ratio} \\
-        fl pkt s        & \tabincell{l}{flow packets rate that is number of packets \\ transferred per second} &  pkt size avg    & \tabincell{l}{Average size of packet} \\
-        fl iat avg      & \tabincell{l}{Average time between two flows} & fw seg avg      & \tabincell{l}{Average size observed in the forward direction} \\
-        fl iat std      & \tabincell{l}{Standard deviation time two flows} & bw seg avg      & \tabincell{l}{Average size observed in the backward direction} \\
-        fl iat max      & \tabincell{l}{Maximum time between two flows} & fw byt blk avg  & \tabincell{l}{Average number of bytes bulk rate in \\ the forward direction} \\
-        fl iat min      & \tabincell{l}{Minimum time between two flows} & fw pkt blk avg  & \tabincell{l}{Average number of packets bulk rate in \\ the forward direction} \\
-        fw iat tot      & \tabincell{l}{Total time between two packets sent in the \\ forward direction} & fw blk rate avg & \tabincell{l}{Average number of bulk rate in the \\ forward direction} \\
-        fw iat avg      & \tabincell{l}{Mean time between two packets sent in the \\ forward direction} & bw byt blk avg  & \tabincell{l}{Average number of bytes bulk rate in \\ the backward direction} \\
-        fw iat std      & \tabincell{l}{Standard deviation time between two packets \\ sent in the forward direction} & bw pkt blk avg  & \tabincell{l}{Average number of packets bulk rate in \\ the backward direction} \\
-        fw iat max      & \tabincell{l}{Maximum time between two packets sent in \\ the forward direction} & bw blk rate avg & \tabincell{l}{Average number of bulk rate in \\ the backward direction} \\ 
-        fw iat min      & \tabincell{l}{Minimum time between two packets sent in \\ the forward direction} & subfl fw pk     & \tabincell{l}{The average number of packets in \\ a sub flow in the forward direction} \\
-        bw iat tot      & \tabincell{l}{Total time between two packets sent in \\ the backward direction} & subfl fw byt    & \tabincell{l}{The average number of bytes in \\ a sub flow in the forward direction} \\
-        bw iat avg      & \tabincell{l}{Mean time between two packets sent in \\ the backward direction} & subfl bw pkt    & \tabincell{l}{The average number of packets in \\ a sub flow in the backward direction} \\ 
-        bw iat std      & \tabincell{l}{Standard deviation time between two packets \\ sent in the backward direction} & subfl bw byt    & \tabincell{l}{The average number of bytes in \\a sub flow in the backward direction} \\
-        bw iat max      & \tabincell{l}{Maximum time between two packets sent in \\ the backward direction} & fw win byt      & \tabincell{l}{Number of bytes sent in initial window \\ in the forward direction} \\
-        bw iat min      & \tabincell{l}{Minimum time between two packets sent in \\ the backward direction} &  bw win byt      & \tabincell{l}{Number of bytes sent in initial window in \\ the backward direction} \\
-        fw psh flag     & \tabincell{l}{Number of times the PSH flag was set in \\ packets travelling in the forward direction \\ (0 for UDP)} & Fw act pkt      & \tabincell{l}{Number of packets with at least 1 byte of TCP data \\ payload in the forward direction} \\
-        bw psh flag     & \tabincell{l}{Number of times the PSH flag was set in \\ packets travelling in the backward direction \\ (0 for UDP)} & fw seg min      & \tabincell{l}{Minimum segment size observed in the \\ forward direction} \\
-        fw urg flag     & \tabincell{l}{Number of times the URG flag was set in \\ packets travelling in the forward direction \\ (0 for UDP)} & atv avg         & \tabincell{l}{Mean time a flow was active before becoming idle} \\
-        bw urg flag     & \tabincell{l}{Number of times the URG flag was set in \\ packets travelling in the backward direction \\ (0 for UDP)} & atv std         & \tabincell{l}{Standard deviation time a flow was active before \\ becoming idle} \\
-        fw hdr len      & \tabincell{l}{Total bytes used for headers in the forward \\ direction} & atv max         & \tabincell{l}{Maximum time a flow was active before becoming idle} \\
-        bw hdr len      & \tabincell{l}{Total bytes used for headers in the forward \\ direction} & atv min         & \tabincell{l}{Minimum time a flow was active before becoming idle} \\
-        fw pkt s        & \tabincell{l}{Number of forward packets per second} & idl avg         & \tabincell{l}{Mean time a flow was idle before becoming active} \\
-        bw pkt s        & \tabincell{l}{Number of backward packets per second} & idl std         & \tabincell{l}{Standard deviation time a flow was idle before \\becoming active} \\
-        pkt len min     & \tabincell{l}{Minimum length of a flow} & idl max         & \tabincell{l}{Maximum time a flow was idle before becoming \\ active} \\
-        & & idl min         & \tabincell{l}{Minimum time a flow was idle before becoming \\ active} \\
+    Flow Duration & Total Forward Packets & Total Backward Packets & Total Length Forward Packets \\
+    Total Length Backward Packets & Forward Packet Length Max & Forward Packet Length Min & Forward Packet Length Mean \\
+    Forward Packet Length Std & Backward Packet Length Max & Backward Packet Length Min & Backward Packet Length Mean \\
+    Backward Packet Length Std & Flow Bytes/s & Flow Packets/s & Flow IAT Mean \\
+    Flow IAT Std & Flow IAT Max & Flow IAT Min & Forward IAT Total \\
+    Forward IAT Mean & Forward IAT Std & Forward IAT Max & Forward IAT Min \\
+    Backward IAT Total & Backward IAT Mean & Backward IAT Std & Backward IAT Max \\
+    Backward IAT Min & Forward PSH Flags & Backward PSH Flags & Forward URG Flags \\
+    Backward URG Flags & Forward Header Length & Backward Header Length & Forward Packets/s \\
+    Backward Packets/s & Packet Length Min & Packet Length Max & Packet Length Mean \\
+    Packet Length Std &  Packet Length Var & FIN Flag Count & SYN Flag Count \\
+    RST Flag Count & PSH Flag Count & ACK Flag Count & URG Flag Count \\
+    CWE Flag Count & ECE Flag Count & Down/Up Ratio & Packet Size Avg \\
+    Forward Seg Size Avg & Backward Seg Size Avg & Forward Byts/b Avg & Forward Packets/b Avg \\
+    Forward Blk Rate Avg & Backward Byts/b Avg & Backward Packets/b Avg & Backward Blk Rate Avg \\
+    Subflow Forward Packets & Subflow Forward Byts & Subflow Backward Packets & Subflow Backward Byts \\
+    Init Forward Win Byts &  Init Backward Win Byts &   Forward Act Data Packets & Forward Seg Size Min \\
+    Active Mean & Active Std & Active Max & Active Min \\
+    Idle Mean & Idle Std & Idle Max & Idle Min \\
     \bottomrule
     \end{tabular}
+
 \end{table*}
 
 In order to detect all types of attacks as much as possible, we integrated the network traffic data that was originally scattered in each day, and extracted 20\% of the data as our main data set while maintaining the label ratio. At the same time, in order to ensure the generalization ability of the model, we randomly select and generate data sets as many times as possible. Finally we get 10 stratified-sampled data set files. 
@@ -676,7 +629,7 @@ So the traditional 5-tuple, i.e. source IP address, source port, destination IP 
 These nominal features will be removed to focus on other statistical features. 
 We also remove timestamp feature because our algorithm focuses on the type of attacks rather than the time characteristics.
 
-Many missing values also exist in the data set. There are many reasons for missing values. Some flows cannot be calculated in certain features. For example, if the duration time of a flow is too small even equals 0, the values of two features named ``Flow Bytes/s'' and ``Flow Pkts/s'' can be NaN or infinity. It is a difficult work to examine every missing value, and they cannot be filled using interpolation because the data set is composed randomly. In this situation, we remove these rows containing missing values to ensure our algorithm running normally.
+Many missing values also exist in the data set. There are many reasons for missing values. Some flows cannot be calculated in certain features. For example, if the duration time of a flow is too small even equals 0, the values of two features named ``Flow Bytes/s'' and ``Flow Packets/s'' can be NaN or infinity. It is a difficult work to examine every missing value, and they cannot be filled using interpolation because the data set is composed randomly. In this situation, we remove these rows containing missing values to ensure our algorithm running normally.
 
 Note that the removed features are only in the context of this paper. These features may be useful in other detection methods.
 
@@ -686,32 +639,52 @@ Variance is a physical quantity used to describe the degree of discreteness of a
 
 \subsubsection{Encode labels}
 
-The type of elements in column ``Label'' is text. It is not a good type because it may decrease the efficiency when process it in our algorithm. We encoder them to numeric code.
+Most anomaly detection models perform as classifiers which predict output labels by calculating the probabilities of every label in the label set. The models use input data to train a function. Both input data and output data are often numeric. However in our data set, the labels are text which cannot be processed by detection model. Thus we encoder the labels and map them to numeric values.
 
 \subsection{Layer 1: Feature Clustering Algorithm based on Pearson Correlation Coefficient}
 
-Many features of the original data set are derived from others. According to our observation, there are linear correlations between many features. The most important step of our method is to merge these linear related features via clustering method. First the concept of correlation coefficient is reviewed.
+% Many features of the original data set are derived from others. According to our observation, there are linear correlations between many features. The most important step of our method is to merge these linear related features via clustering method. First the concept of correlation coefficient is reviewed.
+
+According to our observation, many features are potentially linear related. For example, in Figure \ref{fig:correlated-variables}, we pick up two pairs of features to show their potential linear correlation. The left part shows that features ``Flow IAT Mean'' and ``Forward IAT Mean'' may have positive correlation. In fact the interval time of a whole flow consists of the forward flow. In the right part, we can see that the feature ``Backward Segment Size Average'' is almost equals to ``Backward Packet Length Mean''. We can treat them as the same feature. 
+
+The redundancy of features is produced by the featrue extraction tool. If we use the whole data set to train our model, the redundant features on one hand may increase the computation and spend more time, on the other hand these redundant features cannot import any new informations into our model. So it is necessary to merge these redundant features. In this paper, we use clustering method to reach this target. 
+
+First the concept of correlation coefficient is reviewed.
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.42]{fig/scatter_correlated_variables.png}
+    \caption{Two examples of correlated variables. The feature ``Flow IAT Mean'' and ``Forward IAT Mean'', ``Backward Segment Size Average'' and ``Backward Packet Length Mean'' are potentially related. }
+    \label{fig:correlated-variables}
+\end{figure}
 
 \begin{definition}[Correlation Coefficient]
-The correlation coefficient $Corr(X, Y)$ between two variables $X$ and $Y$ is defined by their respective standard deviation and their co-variation. That is
+    If the variances $\sigma^2_X$ and $\sigma_Y^2$ of two random variables $X$ and $Y$ exists and they satisfy that $\sigma^2_X > 0$ and $\sigma^2_Y > 0$, the correlation coefficient of $X$ and $Y$ can be denoted as
 \begin{equation}
-    Corr(X, Y) = \frac{Cov(X, Y)}{\sigma_X \sigma_Y}
+    \text{Corr}(X, Y) = \frac{\text{Cov}(X, Y)}{\sigma_X \sigma_Y}
 \end{equation}
-where $Cov(X, Y)$ is the co-variation of $X$ and $Y$, and $\sigma_X$ and $\sigma_Y$ are the standard deviation of $X$ and $Y$ respectively.
+where $\text{Cov}(X, Y)$ is the covariation of $X$ and $Y$. And
+$$\text{Corr}(X, Y) \begin{cases}
+    > 0, & X \text{ and } Y \text{ are positive correlated.}\\
+    = 0, & X \text{ and } Y \text{ are not linear correlated.} \\
+    < 0, & X \text{ and } Y \text{ are negative correlated.}
+\end{cases}$$
 \end{definition}
 
 Then we use the correlation coefficient to define the distance of any two features.
 
 \begin{definition}[The distance of two features]
 \label{def:distance}
-The distance of two features is the reciprocal of the absolute value of correlation coefficient, that is
+The distance of two features $f_i$ and $f_j$ is the reciprocal of the absolute value of correlation coefficient of them, that is
 \begin{equation}
-    d(f_i, f_j) = \frac{1}{|Corr(f_i, f_j)|}
+    \label{eq:distance}
+    d(f_i, f_j) = \frac{1}{|\text{Corr}(f_i, f_j)|}
 \end{equation}
-If two features have potential linear relationship, the distance between them is small. On the contrary, if the distance between two features are large, these two features are independent relatively.
 \end{definition}
 
-The clustering algorithm is described as Algorithm \ref{alg:clustering} and Algorithm \ref{alg:compare-and-join}. We calculate the distance between every feature and others. If the distance is less than a threshold $\delta$, the feature is treated as linear related with the other and they belong to the same cluster. Otherwise, the feature will consist a new cluster. The procedure ``compare\_and\_join'' at the 4th line of Algorithm \ref{alg:clustering} is complicated, so we list it as Algorithm \ref{alg:compare-and-join}.
+According to Equation \ref{eq:distance}, if two features have potential linear correlation, the distance between them is small. On the contrary, if the distance between two features are large, these two features are independent relatively. Here we consider both positive correlation and negative correlation are the same, so we use absolute value of the correlation coefficient. However, the more indepent two features are, the less absolute correlation coefficient of them is. This is the exact opposite of our general definition of distance. Hence we use reciprocal to solve this problem.
+
+The clustering algorithm is described as Algorithm \ref{alg:clustering} and Algorithm \ref{alg:compare-and-join}. We calculate the distance between every feature and others. If the distance is less than a threshold $\delta$, the feature is treated as linear related with the other and they belong to the same cluster. Otherwise, the feature will be put in a new cluster. The procedure ``compare\_and\_join'' at the 4th line of Algorithm \ref{alg:clustering} is complicated, so we list it as Algorithm \ref{alg:compare-and-join}.
 
 \begin{algorithm}
 \caption{Feature clustering}
@@ -755,14 +728,14 @@ The clustering algorithm is described as Algorithm \ref{alg:clustering} and Algo
 \FOR{$k=1,2,\ldots,K$}
     \STATE Distance vector for cluster $c_k$, i.e.$\bm{d}(c_k) \gets \emptyset$
     \FOR{$j=1,2,\ldots, \text{sizeof}(c_k)$}
-        \STATE $d=\text{Corr}(D^{(f_i)}, D^{(f_j)})$
+        \STATE $d=1/|\text{Corr}(D^{(f_i)}, D^{(f_j)})|$
         \STATE $\bm{d}(c_k)\text{.add}(d)$
     \ENDFOR
-    \STATE $\bm{d}_{\max}(C)\text{.add}(\max{\bm{d}(c_k)})$
+    \STATE $\bm{d}_{\min}(C)\text{.add}(\min{\bm{d}(c_k)})$
 \ENDFOR
-\STATE Maximum distance in cluster $c_k$ denoted as $d_{\max}=\max{\bm{d}_{\max}(C)}$
-\IF{$d_{\max} > \delta$}
-    \STATE $c_{join}=\arg\max_c{\bm{d}_{\max}(C)}$
+\STATE Minimum distance in cluster $c_k$ denoted as $d_{\min}=\min{\bm{d}_{\min}(C)}$
+\IF{$d_{\min} < \delta$}
+    \STATE $c_{join}=\arg\min_c{\bm{d}_{\min}(C)}$
     \RETURN $c_{join}$
 \ELSE
     \RETURN NULL
@@ -770,7 +743,7 @@ The clustering algorithm is described as Algorithm \ref{alg:clustering} and Algo
 \end{algorithmic}
 \end{algorithm}
 
-After the clusters are generated, next step is to find the center of these clusters. This procedure is listed as Algorithm \ref{alg:find-cluster-center}. We calculate the average distance of every feature between others in each cluster, then we pick the feature with minimum average distance as the center of this cluster. If a cluster only have two features, the algorithm will select a feature as the center randomly.
+After the clusters are generated, next step is to find the center of these clusters. This procedure is listed as Algorithm \ref{alg:find-cluster-center}. We calculate the average distance of every feature between others in each cluster, then we pick the feature with minimum average distance with other features as the center of this cluster. If a cluster only have two features, the algorithm will select the first feature in the cluster as the center of it.
 
 \begin{algorithm}
 \caption{Find the cluster center}
@@ -790,7 +763,7 @@ After the clusters are generated, next step is to find the center of these clust
             \STATE $F'$.add($f \in c_i$)
     \ELSE
         \FOR{each $f \in c_i$}
-            \STATE $\bar{d_f}=\frac{1}{|c_i|-1}\sum d_{f, f'}$
+            \STATE $\bar{d_f}=1/(|c_i|-1)\sum d_{f, f'}$
         \ENDFOR
         \STATE $f_c=\arg\min_f d_c$
         \STATE $F'$.add($f_c$)
@@ -802,63 +775,81 @@ After the clusters are generated, next step is to find the center of these clust
 
 \subsection{Layer 2: Feature Ranking Algorithm based on Information Gain}
 
-Based on the result of layer 1, we select the top $k$ best feature using information gain and information gain ratio simultaneously. The related definitions are list as follow:
+After the procedure of Layer 1, we generate a group of features which are pairwise independent. In order to further refine the feature space of our data, we choose those have better classification ability. The measure of feature classification ability is the information gain. 
+
+We select the top $k$ best feature using information gain and information gain ratio simultaneously. The related definitions are listed as follows:
 
 \begin{definition}[Entropy of data set]
-The entropy of data set is defined as the entropy of  labels. 
+    Entropy\cite{Shannon1948} is the measure of uncertainty of a random variable. In the context of our paper, the entropy of data set is defined as the entropy of labels. If the probability of label $L$ picking value $l_i$ equals to $P(L=l_i)=p_i$, the entropy of data set is denoted as 
 \begin{equation}
-    H(D) = -\sum_{i=0}^N p(L=l_i) \log_2 p(L=l_i)
+    H(D) = -\sum_{i=0}^N p_i \log_2 p_i
 \end{equation}
-where $L$ is the labels of data set.
+Specially, if $p_i=0$ then we define $0\log0 = 0$. 
 \end{definition}
 
 \begin{definition}[Conditional entropy of data set with given feature]
-When the information of a feature is introduced, the entropy of the labels will change. That means the unpredictability of the data set decreases when new information is introduced. 
+The conditional entropy $H(D|f)$ is the uncertainty of data set $D$ under the condition of known feature $f$, which is denoted as 
 \begin{align}
      H(D|f)= & \notag \\
     & -\sum_{j} p(f=f_j) \times \notag \\
     & \sum_{i} p(L=l_i|f=f_j) \log_2 p(L=l_i|f=f_j)   
 \end{align}
+where $p(f=f_j)$ is the probability when feature $f$ takes $f_j$, $p(L=l_i | f=f_j)$ is the conditional probability when label $L$ takes $l_i$ under the condition of $f=f_j$.
 \end{definition}
 
+The information gain indicates the degree to which the uncertainty of the information of the category Y is reduced by the information of the feature X.
+
 \begin{definition}[Information gain]
-The information gain is defined as the difference between entropy of data set and conditional entropy with given feature.
+    The information gain from feature $f$ to data set $D$ is defined as the difference between the entropy $H(D)$ of the set $D$ and the conditional entropy $H(D|F)$ of $D$ for a given feature $f$, i.e.
 \begin{equation}
     IG(D, f) = H(D) - H(D|f)
 \end{equation}
 \end{definition}
 
+Obviously, for data set $D$ the information gain is determined by its features. Different features have different information gain. If a feature has greater information gain, it has stronger ability to classify the data.
+
 \begin{definition}[Information gain ratio]
-Using information gain may tend to choose the feature which has larger value range. In order to eliminate this effect, the information gain ratio is introduced. It is defined as the information gain divided by entropy of the feature. 
+The problem of using information gain is that it tend to choose the feature which has larger value range. In order to eliminate this effect, the information gain ratio is introduced. It is defined as the information gain divided by entropy of the feature. 
 \begin{equation}
     IGR(D, f) = \frac{IG(D, f)}{H(f)}
 \end{equation}
 \end{definition}
 
 \begin{algorithm}
-\caption{Feature ranking}
-\label{alg:feature-ranking}
-\begin{algorithmic}[1]
-\REQUIRE ~~\\
-    Data set $D'$ with clustered features calculated in Algorithm \ref{alg:clustering} and \ref{alg:find-cluster-center}
-\ENSURE ~~\\
-    A feature list $F''=\{f''_1, f''_2, \ldots, f''_k\}$ whose features are top $k$ after ranked. 
-\STATE Calculate the entropy $H(D')$ by its labels.
-\FOR{$i=1,2,\ldots, K$}
-    \STATE Calculate the conditional entropy $H(D'|f_i)$.
-    \STATE Calculate the information gain $IG_{f_i} = H(D') - H(D'|f_i)$
-    \STATE Calculate the information gain ratio $IGR_{f_i} = \frac{IG_{f_i}}{H(f_i)}$
-\ENDFOR
-\STATE Calculate the average information gain $\bar{IG}=\frac{1}{K}\sum IG$
-\STATE Choose the features $F_{IG}=\{f|IG_{f} > \bar{IG}\}$
-\STATE Sort the features according to $IGR$
-\RETURN $F''$
-\end{algorithmic}
-\end{algorithm}
+    \caption{Feature ranking}
+    \label{alg:feature-ranking}
+    \begin{algorithmic}[1]
+    \REQUIRE ~~\\
+        Data set $D'$ with clustered features calculated in Algorithm \ref{alg:clustering} and \ref{alg:find-cluster-center}
+    \ENSURE ~~\\
+        A feature list $F''=\{f''_1, f''_2, \ldots, f''_k\}$ whose features are top $k$ after ranked. 
+    \STATE Calculate the entropy $H(D')$ by its labels.
+    \FOR{$i=1,2,\ldots, K$}
+        \STATE Calculate the conditional entropy $H(D'|f_i)$.
+        \STATE Calculate the information gain $$IG_{f_i} = H(D') - H(D'|f_i)$$
+        \STATE Calculate the information gain ratio 
+        $$IGR_{f_i} = IG_{f_i}/H(f_i)$$
+    \ENDFOR
+    \STATE Calculate the average information gain $\bar{IG}=(\sum IG) / K$
+    \STATE Choose the features $F_{IG}=\{f|IG_{f} > \bar{IG}\}$
+    \STATE Sort the features according to $IGR$
+    \RETURN $F''$
+    \end{algorithmic}
+    \end{algorithm}
+
+Now our feature ranking algorithm is introduced in Algorithm \ref{alg:feature-ranking}. We consider the information gain and information gain ratio simultaneously. First we calculate the information gain of all features which has been clustered by Algorithm \ref{alg:clustering} and \ref{alg:find-cluster-center}. Then we calculate the average information gain and sort them by their information gain ratio. Finally we select top $K$ features to compose new feature set. Here we set $K=10$. In different anomaly detection scenarios, the value of $K$ should be chosen on demand.
+
+
 
 \subsection{Decision Tree Classifier}
 
+Since we have selected all features we need to determine whether a flow is an attack. Furthermore we want to detect detailed attack types. We choose C4.5 decision tree\cite{quinlan2014c4} as our classification algorithm. C4.5 decision tree uses information gain ratio to classify data instances. The implementation of decision tree algorithms is beyond the scope of this article. However, our method in fact previously complete the feature selection process of decision tree, so the tree classifier can use our result and speed the training process.
 
+\subsection{Compare to Dimensionality Reduction Algorithms}
+
+Our method is one kind of feature selection algorithm. It is different from dimensionality reduction algorithms like PCA\cite{PCA1987}. PCA transforms the original data into a set of linearly independent representations of each dimension by linear transformation to extract the main linear components of the data, while feature selection methods do not transform the data. It just chooses the key features which can provide the most information about the data. The data transformed by PCA will lose their explanation of real meaning, while feature selection algorithms can keep the real meaning of every reserved features. 
+
+Meanwhile, our proposed method includes some characteristics of PCA. First, we calculate the covariance and correlation coefficient of all feature vectors, which is also used in calculation of PCA. Second, the features selected by our method are orthogonal and PCA do the same thing. Last but not least, every component generated by PCA have maximum variance, and our method contains the similar step. But in our method, the features with small variance are filtered.
 
 \section{Evaluations}
 \label{sec:evaluation}
@@ -871,16 +862,16 @@ All experiments are running on a quad-core Intel PC with 2.90GHz CPU and 16 GB o
 
 \subsection{Experiment Results}
 
-\subsubsection{Feature subset}
+\subsubsection{Selected Feature subset}
 
 Table \ref{tab:selected-features} shows the features selected by our method and their descriptions. From Table \ref{tab:selected-features} we make the following observations:
 
-\begin{enumerate}
+\begin{itemize}
 	\item The sizes of packets are important. In the top 10 important features, there are 4 features about packet sizes. Considering the MTU of an IP network, a flow shouldn’t contain too large packets. If the flow meter observes a flow contain large packets, the probability that this stream is an attack stream will be high. 
     \item Another type of important features is the count of packets. In benign flows, the number of packets often small because current network services intend to use short connection to complete the interaction with each other, in order to not occupy the bandwidth resources of the network. However, the attackers intend to send large amounts of packets to exhaust the connection resources and prevent connection from normal users. 
     \item Time-related features are also important. As we mentioned before, benign services intend to use short connection, while attackers may use long connection. A typical attack is to control the interval of any two flows which is a little shorter than the TCP waiting time. It prevents the TCP connection closing and finally exhaust the connection resources. In practise, time-related features should be considered with the count of packets together.
-    \item Some miscellaneous. In our result, the ACK Flag count is selected in our feature subset. In fact the number of ACKs accounts for a large proportion of the TCP flow. % TODO: analysis detailed representation of ACK Flag cnt or delete it.
-\end{enumerate} 
+    \item Some miscellaneous. In our result, the ACK Flag count is selected in our feature subset. In fact the number of ACKs accounts for a large proportion of the TCP flow. % TODO: analysis detailed representation of ACK Flag Count or delete it.
+\end{itemize} 
 
 \begin{table}[!htpb]
     \caption{Selected Features and Their Description}
@@ -890,20 +881,20 @@ Table \ref{tab:selected-features} shows the features selected by our method and 
     \toprule
         Feature Name    & Description \\
     \midrule
-    Bwd Pkts/s          & Number of backward packets per second \\
-    Fwd Seg Size Min    & \tabincell{l}{Minimum segment size observed in \\ the forward direction} \\
-    Init Fwd Win Byts   & \tabincell{l}{Number of bytes sent in initial window in the \\ forward direction} \\
-    Flow Pkts/s         & \tabincell{l}{flow packets rate that is number of packets \\ transferred per second} \\
-    ACK Flag Cnt        & Number of packets with ACK \\
+    Backward Packets/s          & \tabincell{l}{Number of backward packets per  \\ second} \\
+    Forward Segment Size Min    & \tabincell{l}{Minimum segment size observed in \\ the forward direction} \\
+    Init Forward Win Byts   & \tabincell{l}{Number of bytes sent in initial  \\ window in the forward direction} \\
+    Flow Packets/s         & \tabincell{l}{flow packets rate that is number of \\ packets transferred per second} \\
+    ACK Flag Count        & Number of packets with ACK \\
     Flow IAT Mean       & Average time between two flows \\ 
-    Bwd IAT Max         & \tabincell{l}{Maximum time between two packets sent in \\ the backward direction} \\
-    Idle Mean           & \tabincell{l}{Mean time a flow was idle before becoming \\ active}\\
-    Fwd Pkt Len Min     & Minimum size of packet in forward direction \\
+    Backward IAT Max         & \tabincell{l}{Maximum time between two packets \\ sent in the backward direction} \\
+    Idle Mean           & \tabincell{l}{Mean time a flow was idle before \\ becoming active}\\
+    Forward Packet Length Min     & \tabincell{l}{Minimum size of packet in forward \\ direction} \\
     Flow Duration       & Flow duration \\
-    Bwd Pkt Len Mean    & Mean size of packet in backward direction \\
-    Pkt Len Min         & Minimum length of a flow \\
-    Fwd Pkts/s          & Number of forward packets per second \\
-    Fwd IAT Tot         & \tabincell{l}{Total time between two packets sent in the \\ forward direction} \\
+    Backward Packet Length Mean    & \tabincell{l}{Mean size of packet in backward \\ direction} \\
+    Packet Length Min         & Minimum length of a flow \\
+    Forward Packets/s          & \tabincell{l}{Number of forward packets per  \\ second} \\
+    Forward IAT Total         & \tabincell{l}{Totalal time between two packets sent \\ in the forward direction} \\
     \bottomrule
     \end{tabular}
 \end{table}
