@@ -531,7 +531,7 @@ Moreover, there are different feature selection methods aim to process different
 
 \begin{figure*}[!htbp]
     \centering
-    \includegraphics[scale=0.75]{fig/Framework.pdf}
+    \includegraphics[scale=0.8]{fig/Framework.pdf}
     \caption{Detection Framework}
     \label{fig:framework}
 \end{figure*}
@@ -556,9 +556,7 @@ The target of the function $fs$, which is the proposed algorithm, is to find the
     \item The feature subset $\hat{F}$ is the least set of $s_l$ with given count of features $l$. This feature subset should has enough information to determine whether a flow is an attack or not. If the feature set add or remove any other features, the result of detection will deteriorate.
 \end{itemize}
 
-% TODO: Add Solution
-
-
+To find such feature subset, we propose our hierarchical feature selection algorithm, which is presented in next Section.
 
 \section{Hierarchical Feature Selection Method}
 \label{sec:methods}
@@ -854,15 +852,13 @@ Meanwhile, our proposed method includes some characteristics of PCA. First, we c
 \section{Evaluations}
 \label{sec:evaluation}
 
-The evaluations consists of two parts: the first part is comparison of training time, and the second part is comparison of metrics including accuracy, precision, recall and f1-score. All comparisons are conducted with the features selected by our method and by chi-square method, and the full feature set.
+In this section, the experiments and evaluation results are shown. First we describe the experiment setup. Then we list selected feature by our algorithm and explain why these feature are selected. Next, since the distance threshold $\delta$ is a changeable parameter, we describe how the numbers of clusters are impacted by different distance threshold. Further, we compare the training time and classification metrics including accuracy, precision, recall and F1-score between our method and the full original data set, as well as our method and Select K Best method based on chi-square function respectively. Finally we illustrate and explain the confusion matrix of our prediction results.
 
 \subsection{Experiment Setup}
 
 All experiments are running on a quad-core Intel PC with 2.90GHz CPU and 16 GB of memory. Our algorithms are implemented in Python 3.7 and the chi-square method is implemented in a Python library scikit-learn\cite{sklearn}.
 
-\subsection{Experiment Results}
-
-\subsubsection{Selected Feature subset}
+\subsection{Selected Feature subset}
 
 Table \ref{tab:selected-features} shows the features selected by our method and their descriptions. From Table \ref{tab:selected-features} we make the following observations:
 
@@ -870,7 +866,6 @@ Table \ref{tab:selected-features} shows the features selected by our method and 
 	\item The sizes of packets are important. In the top 10 important features, there are 4 features about packet sizes. Considering the MTU of an IP network, a flow shouldn’t contain too large packets. If the flow meter observes a flow contain large packets, the probability that this stream is an attack stream will be high. 
     \item Another type of important features is the count of packets. In benign flows, the number of packets often small because current network services intend to use short connection to complete the interaction with each other, in order to not occupy the bandwidth resources of the network. However, the attackers intend to send large amounts of packets to exhaust the connection resources and prevent connection from normal users. 
     \item Time-related features are also important. As we mentioned before, benign services intend to use short connection, while attackers may use long connection. A typical attack is to control the interval of any two flows which is a little shorter than the TCP waiting time. It prevents the TCP connection closing and finally exhaust the connection resources. In practise, time-related features should be considered with the count of packets together.
-    \item Some miscellaneous. In our result, the ACK Flag count is selected in our feature subset. In fact the number of ACKs accounts for a large proportion of the TCP flow. % TODO: analysis detailed representation of ACK Flag Count or delete it.
 \end{itemize} 
 
 \begin{table}[!htpb]
@@ -898,6 +893,12 @@ Table \ref{tab:selected-features} shows the features selected by our method and 
     \bottomrule
     \end{tabular}
 \end{table}
+
+\subsection{Investigate the effect of the distance threshold on the cluster numbers}
+
+\subsection{Compare with training time and metrics on full original data set}
+
+\subsection{Compare with training time and metrics on chi-square-based Select K Best algorithm}
 
 \subsubsection{Training Time}
 
