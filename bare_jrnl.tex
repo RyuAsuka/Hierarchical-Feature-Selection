@@ -514,7 +514,7 @@ The contributions of our paper can be summarized as follow:
     \item This paper uses decision tree as classifier to compare selected feature subset using proposed method, chi-square selection method, and the complete feature set on the aspect of training time, accuracy, precision, recall and F1-score.
 \end{enumerate}
 
-The remaining part of the paper is organized as follows: Section \ref{sec:related} describes related works. Section \ref{sec:problem} describe the formalization of feature selection problem. Section \ref{sec:methods} introduces our hierarchical feature selection method. Section \ref{sec:evaluation} shows the experiment results and then the results is discussed in Section \ref{sec:discussion}. Finally Section \ref{sec:conclusion} concludes this paper and indicates future works.
+The remaining part of the paper is organized as follows: Section \ref{sec:related} describes related works. Section \ref{sec:problem} describe the formalization of feature selection problem. Section \ref{sec:methods} introduces our hierarchical feature selection method. Section \ref{sec:evaluation} shows the experiment results and the discussion about the results. Finally Section \ref{sec:conclusion} concludes this paper and indicates future works.
 
 \section{Related Works}
 \label{sec:related}
@@ -651,7 +651,7 @@ First the concept of correlation coefficient is reviewed.
 
 \begin{figure}
     \centering
-    \includegraphics[scale=0.42]{fig/scatter_correlated_variables.png}
+    \includegraphics[scale=0.5]{fig/scatter-correlated-variables.png}
     \caption{Two examples of correlated variables. The feature ``Flow IAT Mean'' and ``Forward IAT Mean'', ``Backward Segment Size Average'' and ``Backward Packet Length Mean'' are potentially related. }
     \label{fig:correlated-variables}
 \end{figure}
@@ -896,79 +896,133 @@ Table \ref{tab:selected-features} shows the features selected by our method and 
 
 \subsection{Investigate the effect of the distance threshold on the cluster numbers}
 
+In our algorithm, an important parameter is the distance threshold $\delta$. It takes effects on the number of clusters generated in Algorithm \ref{alg:clustering}. Figure \ref{fig:different-threshold} shows the result of number of generated clusters from 10 split data set files under different threshold $\delta$. We set $\delta$ from 0.7 to 0.95 with interval 0.05 between any two values. The average number of clusters are listed in Table \ref{tab:mean-cluster-number}. Here a trade-off exists about the number of clusters and the number of features in every cluster. If $\delta$ is set too small, the number of clusters will be small too, however many features with weak correlation will be merged in the same cluster and it will finally impact subsequent feature ranking and decision tree learning procedures. Meanwhile, a larger $\delta$ will produce too many clusters which contains only one feature, because the condition is too stricted to merge features. In our practice, setting $\delta$ between 0.8 and 0.9 is a better choicce.
+
 \begin{figure}
     \centering
-    \includegraphics[scale=0.32]{fig/Cluster_Number_in_diff_delta.pdf}
-    \caption{Number of clusters in 10 splitted data set under the effect of different distance threshould $\delta$. }
+    \includegraphics[scale=0.5]{fig/Cluster-Number-in-diff-delta.pdf}
+    \caption{Number of clusters in 10 split data set under the effect of different distance threshould $\delta$. }
     \label{fig:different-threshold}
 \end{figure}
 
+\begin{table}
+    \caption{Average number of clusters under different distance threshold}
+    \label{tab:mean-cluster-number}
+    \centering
+    \begin{tabular}{r|rrrrrr}
+        \toprule
+        $\delta$ & 0.7 & 0.75 & 0.8 & 0.85 & 0.9 & 0.95 \\
+        \midrule
+        $\bar{N}$ & 26 & 29 & 30 & 32 & 36 & 42 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
 \subsection{Compare with training time and metrics on full original data set}
+
+In this subsection we compare the training time of decision tree classifier and the metrics of classification effects between our method under different distance threshold $\delta$ and the full original data set.
+
+\subsubsection{Training Time}
+
+When we use the full original data set to train a decision tree classifier and then prune the tree to 10 decision nodes too, the training time is near 300 seconds averagely. Using our method, the training time decreases to near 60 seconds averagely. The training time under different distance threshold $\delta$ is shown in Figure \ref{fig:training-time-with-full}. Meanwhile this figure shows that the average training time increases slowly with $\delta$ increasing.
+
+
+\begin{figure}[!htpb]
+    \centering
+    \includegraphics[scale=0.45]{fig/Training-time-with-full.pdf}
+    \caption{Training Time comparison with full original data set}
+    \label{fig:training-time-with-full}
+\end{figure}
+
+\subsubsection{Metrics}
+
+The metrics of model include accuracy, precision, recall and f1-score. Related definitions are listed below:
+
+\begin{definition}[Accuracy]
+    In classification problems, we denote $TP$ as true positve prediction, $FP$ as false positive prediction, $TN$ as true negative prediction and $FN$ as false negative prediction.
+
+    The accuracy is defined as the ratio of $TP+TN$ in all test instances, which is
+    \begin{equation}
+        \text{Acc}=\frac{TP+TN}{TP+TN+FP+FN}
+    \end{equation}
+    which means the all true instances classified in all test instances.
+\end{definition}
+
+\begin{definition}[Precision]
+    The precision is defined as the ratio of $TP$ in all positive instances classified by the model, which is
+    \begin{equation}
+        \text{Pre} = \frac{TP}{TP+FP}
+    \end{equation}
+    which means the all true positive instances classified in all positve instances.
+\end{definition}
+
+\begin{definition}[Recall]
+    The recall is defined as the ratio of $TP$ in all real positive instances, which is
+    \begin{equation}
+        \text{Rec} = \frac{TP}{TP+FN}
+    \end{equation}
+\end{definition}
+
+\begin{definition}[F1-score]
+    The F1-score is defined as the harmonic average of precision and recall.
+    \begin{equation}
+        F_1 = \frac{2}{\frac{1}{\text{Pre}} + \frac{1}{\text{Rec}}}
+    \end{equation}
+    which is a trade-off between the precision and recall.
+\end{definition}
+
+These four metrics of our methods under different $\delta$ is shown in Figure , along with the metrics of the model trained on full original data set. The result is shown in Figure \ref{fig:metrics-full} and Table \ref{tab:metric-full}. The average accuracy of our method is 97.94\%, which is a little higher than the accuracy on full data set. The average precision, recall and F1-score are 79.46\%, 80.73\% and 79.33\% respectively. They are all higher than the results on full data set. 
+
+The result proved that the feature selected by our method can help improving performance of decision tree classifier comparing with using tree classifier directly on the full original data set.
+
+\begin{table}
+    \centering
+    \caption{The metrics of different $\delta$ and full data set.}
+    \label{tab:metric-full}
+    \begin{tabular}{lrrrr}
+        \toprule
+        dataset & Accuracy & F1-Score & Precision & Recall \\
+        \midrule
+            $\delta=0.7$ &  97.9604 & 79.0699 & 80.1735 & 79.0867 \\
+            $\delta=0.75$ &	97.9297 & 80.2657 & 81.9095 & 79.6229 \\
+            $\delta=0.8$ &	97.9104 & 80.2791 & 81.1272 & 80.3653 \\
+            $\delta=0.85$ &	97.9558 & 79.3655 & 80.7983 & 79.0457 \\
+            $\delta=0.9$ &  97.9557 & 78.9994 & 80.3196 & 78.6552 \\
+            $\delta=0.95$ &	97.9489 & 78.8134 & 79.9506 & 79.2532 \\
+            Full data set &	97.1315 & 78.0325 & 80.2580 & 77.3223 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[!htpb]
+    \centering
+    \includegraphics[scale=0.35]{fig/metrics-full.pdf}
+    \caption{The metrics including accuracy, precision, recall and F1-score of the data subset with different $\delta$ and the full data set.}
+    \label{fig:metrics-full}
+\end{figure}
 
 \subsection{Compare with training time and metrics on chi-square-based Select K Best algorithm}
 
 \subsubsection{Training Time}
 
-The result of training time in three situations is shown in Table \ref{tab:time} and Figure \ref{fig:training-time}. Our method get the shortest training time in three situations. The decision tree will calculate the information gain of all features in the feature set. In fact, our method selects key features previously so it can shorten the training time of the model. 
+In this experiment, we compare the training time and metrics of our method and Select-K-Best method using Chi-square funtion in the same size of feature set, in other words the number of features are both set to 10 in these two methods.
 
-\begin{table}[!htpb]
-    \caption{Training time comparison}
-    \label{tab:time}
-    \centering
-    \begin{tabular}{crrr}
-    \toprule
-        & Full & Chi-square & Hierarchical \\
-    \midrule
-    Training Time(s) & 308.588 & 83.771 & \textbf{61.198} \\
-    \bottomrule
-    \end{tabular}
-\end{table}
-
-\begin{figure}[!htbp]
-    \centering
-    \includegraphics[scale=0.5]{fig/Training-Time.pdf}
-    \caption{Training Time}
-    \label{fig:training-time}
-\end{figure}
+The training time comparison is shown in Figure . We can see our training time is still better than the chi-square method performs. The chi-square method selects $n$ features with the highest values for the test chi-squared statistic from input data $X$. However, it only considers whether every single feature is correlated with the class label instead of considering the correlation between these features. As a result, the selected feature subset may contain features with inner relationship, which may bring the redundant information in the model. While our method can effectively eliminate the redundant information. That is the reason why our training time is lower.
 
 \subsubsection{Metrics}
 
-The metrics of model include accuracy, precision, recall and f1-score. The test result is shown in Table \ref{tab:metrics} and Figure \ref{fig:metrics}. The result indicates that Except that it is only slightly lower in accuracy, our model is generally better than the model trained with the full feature set. Besides, the model using the features selected by our method performs better than the model trained with the features selected by chi-square method.
+The classification metrics comparison is shown in Figure . The metrics of our methods are 
 
-\begin{table}[!htpb]
-    \caption{Metrics Comparison}
-    \label{tab:metrics}
-    \centering
-    \begin{tabular}{lrrr}
-    \toprule
-        & Hierarchical & Full & Chi-square \\
-    \midrule
-    Accuracy(\%) & \textbf{97.96} & 97.91 & 94.30 \\
-    Precision(\%) & \textbf{80.40} & 81.38 & 72.43 \\
-    Recall(\%) & \textbf{79.08} & 77.35 & 67.76 \\
-    F1-Score(\%) & \textbf{79.14} & 78.52 & 68.78 \\
-    \bottomrule
-    \end{tabular}
-\end{table}
+\subsection{Confusion Matrix}
 
-\begin{figure}[!htbp]
-    \centering
-    \includegraphics[scale=0.4]{fig/metrics.pdf}
-    \caption{Accuracy, Precision, Recall and F1-score}
-    \label{fig:metrics}
-\end{figure}
+Finally we analyze the confusion matrix of our method. The confusion matrix is shown in Figure \ref{fig:confusion-matrix}. We add the confusion matirx of all split data set. The matrix shows that our method can mainly classify the data into correct class label. However, there are still many false positive and false negative instances. The most severe miss happens on the label ``DOS attacks-GoldenEye'' and ``Infilteration''. The flow patterns of these two situation performs similar with benign flow pattern so that our method could not discriminate them properly. The flow patterns of these two situation should be further study and new method should be proposed to detect them.  
 
-\begin{figure*}[!htbp]
+\begin{figure*}
     \centering
     \includegraphics[scale=0.5]{fig/confusion-matrix.pdf}
     \caption{Heatmap of confusion matrix}
     \label{fig:confusion-matrix}
 \end{figure*}
-
-\subsection{Confusion Matrix}
-
-\section{Discussion}
-\label{sec:discussion}
 
 \section{Conclusion}
 \label{sec:conclusion}
