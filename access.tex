@@ -2,6 +2,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsthm}
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{graphicx}
@@ -14,7 +15,9 @@
 \usepackage{bm}
 \usepackage{booktabs}
 \newcommand{\tabincell}[2]{\begin{tabular}[t]{@{}#1@{}}#2\end{tabular}}
-\newtheorem{definition}{Definition}
+% \newtheorem{definition}{Definition}
+\theoremstyle{definition}
+\newtheorem{defn}{Definition}
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
@@ -216,7 +219,7 @@ First the concept of correlation coefficient is reviewed.
     \label{fig:correlated-variables}
 \end{figure}
 
-\begin{definition}[Correlation Coefficient]
+\begin{defn}[Correlation Coefficient]
     If the variances $\sigma^2_X$ and $\sigma_Y^2$ of two random variables $X$ and $Y$ exists and they satisfy that $\sigma^2_X > 0$ and $\sigma^2_Y > 0$, the correlation coefficient of $X$ and $Y$ can be denoted as
 \begin{equation}
     \text{Corr}(X, Y) = \frac{\text{Cov}(X, Y)}{\sigma_X \sigma_Y}
@@ -227,18 +230,18 @@ $$\text{Corr}(X, Y) \begin{cases}
     = 0, & X \text{ and } Y \text{ are not linear correlated.} \\
     < 0, & X \text{ and } Y \text{ are negative correlated.}
 \end{cases}$$
-\end{definition}
+\end{defn}
 
 Then we use the correlation coefficient to define the distance of any two features.
 
-\begin{definition}[The distance of two features]
+\begin{defn}[The distance of two features]
 \label{def:distance}
 The distance of two features $f_i$ and $f_j$ is the reciprocal of the absolute value of correlation coefficient of them, that is
 \begin{equation}
     \label{eq:distance}
     d(f_i, f_j) = \frac{1}{|\text{Corr}(f_i, f_j)|}
 \end{equation}
-\end{definition}
+\end{defn}
 
 According to Equation \ref{eq:distance}, if two features have potential linear correlation, the distance between them is small. On the contrary, if the distance between two features are large, these two features are independent relatively. Here we consider both positive correlation and negative correlation are the same, so we use absolute value of the correlation coefficient. However, the more indepent two features are, the less absolute correlation coefficient of them is. This is the exact opposite of our general definition of distance. Hence we use reciprocal to solve this problem.
 
@@ -339,15 +342,15 @@ After the procedure of Layer 1, we generate a group of features which are pairwi
 
 We select the top $k$ best feature using information gain and information gain ratio simultaneously. The related definitions are listed as follows:
 
-\begin{definition}[Entropy of data set]
+\begin{defn}[Entropy of data set]
     Entropy\cite{Shannon1948} is the measure of uncertainty of a random variable. In the context of our paper, the entropy of data set is defined as the entropy of labels. If the probability of label $L$ picking value $l_i$ equals to $P(L=l_i)=p_i$, the entropy of data set is denoted as 
 \begin{equation}
     H(D) = -\sum_{i=0}^N p_i \log_2 p_i
 \end{equation}
 Specially, if $p_i=0$ then we define $0\log0 = 0$. 
-\end{definition}
+\end{defn}
 
-\begin{definition}[Conditional entropy of data set with given feature]
+\begin{defn}[Conditional entropy of data set with given feature]
 The conditional entropy $H(D|f)$ is the uncertainty of data set $D$ under the condition of known feature $f$, which is denoted as 
 \begin{align}
      H(D|f)= & \notag \\
@@ -355,25 +358,25 @@ The conditional entropy $H(D|f)$ is the uncertainty of data set $D$ under the co
     & \sum_{i} p(L=l_i|f=f_j) \log_2 p(L=l_i|f=f_j)   
 \end{align}
 where $p(f=f_j)$ is the probability when feature $f$ takes $f_j$, $p(L=l_i | f=f_j)$ is the conditional probability when label $L$ takes $l_i$ under the condition of $f=f_j$.
-\end{definition}
+\end{defn}
 
 The information gain indicates the degree to which the uncertainty of the information of the category Y is reduced by the information of the feature X.
 
-\begin{definition}[Information gain]
+\begin{defn}[Information gain]
     The information gain from feature $f$ to data set $D$ is defined as the difference between the entropy $H(D)$ of the set $D$ and the conditional entropy $H(D|F)$ of $D$ for a given feature $f$, i.e.
 \begin{equation}
     IG(D, f) = H(D) - H(D|f)
 \end{equation}
-\end{definition}
+\end{defn}
 
 Obviously, for data set $D$ the information gain is determined by its features. Different features have different information gain. If a feature has greater information gain, it has stronger ability to classify the data.
 
-\begin{definition}[Information gain ratio]
+\begin{defn}[Information gain ratio]
 The problem of using information gain is that it tend to choose the feature which has larger value range. In order to eliminate this effect, the information gain ratio is introduced. It is defined as the information gain divided by entropy of the feature. 
 \begin{equation}
     IGR(D, f) = \frac{IG(D, f)}{H(f)}
 \end{equation}
-\end{definition}
+\end{defn}
 
 \begin{algorithm}
     \caption{Feature ranking}
@@ -522,7 +525,7 @@ Meanwhile this figure shows that the average training time increases slowly with
 
 The metrics of model include accuracy, precision, recall and f1-score. Related definitions are listed below:
 
-\begin{definition}[Accuracy]
+\begin{defn}[Accuracy]
     In classification problems, we denote $TP$ as true positve prediction, $FP$ as false positive prediction, $TN$ as true negative prediction and $FN$ as false negative prediction.
 
     The accuracy is defined as the ratio of $TP+TN$ in all test instances, which is
@@ -530,30 +533,30 @@ The metrics of model include accuracy, precision, recall and f1-score. Related d
         \text{Acc}=\frac{TP+TN}{TP+TN+FP+FN}
     \end{equation}
     which means the all true instances classified in all test instances.
-\end{definition}
+\end{defn}
 
-\begin{definition}[Precision]
+\begin{defn}[Precision]
     The precision is defined as the ratio of $TP$ in all positive instances classified by the model, which is
     \begin{equation}
         \text{Pre} = \frac{TP}{TP+FP}
     \end{equation}
     which means the all true positive instances classified in all positve instances.
-\end{definition}
+\end{defn}
 
-\begin{definition}[Recall]
+\begin{defn}[Recall]
     The recall is defined as the ratio of $TP$ in all real positive instances, which is
     \begin{equation}
         \text{Rec} = \frac{TP}{TP+FN}
     \end{equation}
-\end{definition}
+\end{defn}
 
-\begin{definition}[F1-score]
+\begin{defn}[F1-score]
     The F1-score is defined as the harmonic average of precision and recall.
     \begin{equation}
         F_1 = \frac{2}{\frac{1}{\text{Pre}} + \frac{1}{\text{Rec}}}
     \end{equation}
     which is a trade-off between the precision and recall.
-\end{definition}
+\end{defn}
 
 These four metrics of our methods under different $\delta$ is shown in Figure , along with the metrics of the model trained on full original data set. The result is shown in Figure \ref{fig:metrics-full} and Table \ref{tab:metric-full}. The average accuracy of our method is 97.94\%, which is a little higher than the accuracy on full data set. The average precision, recall and F1-score are 79.46\%, 80.73\% and 79.33\% respectively. They are all higher than the results on full data set. 
 
