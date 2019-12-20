@@ -359,8 +359,10 @@
 \renewcommand{\algorithmicensure}{\textbf{Output:}}
 \usepackage{bm}
 \usepackage{booktabs}
+\usepackage{amsthm}
 \newcommand{\tabincell}[2]{\begin{tabular}[t]{@{}#1@{}}#2\end{tabular}}
 
+\theoremstyle{definition}
 \newtheorem{definition}{Definition}
 
 \begin{document}
@@ -1061,7 +1063,7 @@ Finally we analyze the confusion matrix of our method. The confusion matrix is s
 
 \begin{figure*}
     \centering
-    \includegraphics[scale=0.5]{fig/confusion-matrix.pdf}
+    \includegraphics[scale=0.45]{fig/confusion-matrix.pdf}
     \caption{Heatmap of confusion matrix}
     \label{fig:confusion-matrix}
 \end{figure*}
