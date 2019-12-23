@@ -26,14 +26,14 @@
 \history{Date of publication xxxx 00, 0000, date of current version xxxx 00, 0000.}
 \doi{10.1109/ACCESS.2017.DOI}
 
-\title{A Hierarchical Feature Selection Method for Network Anomaly Detection}
+\title{HFS-NAD: A Hierarchical Feature Selection Scheme for Network Anomaly Detection}
 \author{\uppercase{Jiewen Mao},
 \uppercase{Yongquan Hu, Dong Jiang, Tongquan Wei, and Fuke Shen}}
 \address{School of Computer Science and Technology, East China Normal University, Shanghai 200062, China}
 
 \markboth
 {J. Mao \headeretal: A Hierarchical Feature Selection Method for Network Anomaly Detection}
-{J. Mao \headeretal:A Hierarchical Feature Selection Method for Network Anomaly Detection}
+{J. Mao \headeretal: A Hierarchical Feature Selection Method for Network Anomaly Detection}
 
 \corresp{Corresponding author: Tongquan Wei (e-mail: tqwei@cs.ecnu.edu.cn).}
 
@@ -92,10 +92,11 @@ Moreover, there are different feature selection methods aim to process different
 %     \caption{Detection Framework}
 %     \label{fig:framework}
 % \end{figure*}
-\Figure[t!](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.8]{fig/Framework.pdf}{Detection Framework\label{fig:framework}}
+\Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.8]{fig/Framework.pdf}{The workflow of proposed feature selection scheme.\label{fig:framework}}
 
 \section{Problem Definition and Solution}
 \label{sec:problem}
+
 We denote 
 $$D=\left(\begin{array}{llll}
     \bm{x}_1 & \bm{x}_2 & \ldots & \bm{x}_m
@@ -130,7 +131,7 @@ After the three-steps processing, the refined data subset is divided into traini
 
 In following subsections the details and algorithms of proposed methods are described.
 
-\subsection{Data Set and Preprocessing}
+\subsection{Preprocessing Dataset}
 
 The data set being studied is CIC-IDS-2018\cite{cic2018}. 
 It is generated on a simulated network topology on the AWS computing platform. The network topology is shown as Figure \ref{fig:topology}. It has 5 subnet and 1 attacker network.  
@@ -142,7 +143,7 @@ The data set consists of seven different attack scenarios: Brute-force, Heartble
 %     \caption{Simulated network topology on AWS computing platform}
 %     \label{fig:topology}
 % \end{figure}
-\Figure(topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.45]{fig/Topology.pdf}{Simulated network topology on AWS computing platform\label{fig:topology}}
+\Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.45]{fig/Topology.pdf}{Simulated network topology on AWS computing platform\label{fig:topology}}
 
 \begin{table*}[!htpb]
     \caption{76 Features of CIC-IDS-2018 data set}
@@ -200,7 +201,7 @@ Variance is a physical quantity used to describe the degree of discreteness of a
 
 Most anomaly detection models perform as classifiers which predict output labels by calculating the probabilities of every label in the label set. The models use input data to train a function. Both input data and output data are often numeric. However in our data set, the labels are text which cannot be processed by detection model. Thus we encoder the labels and map them to numeric values.
 
-\subsection{Layer 1: Feature Clustering Algorithm based on Pearson Correlation Coefficient}
+\subsection{Layer 1: Feature Clustering Based on Pearson Correlation Coefficient}
 
 % Many features of the original data set are derived from others. According to our observation, there are linear correlations between many features. The most important step of our method is to merge these linear related features via clustering method. First the concept of correlation coefficient is reviewed.
 
@@ -246,7 +247,7 @@ According to Equation \ref{eq:distance}, if two features have potential linear c
 The clustering algorithm is described as Algorithm \ref{alg:clustering} and Algorithm \ref{alg:compare-and-join}. We calculate the distance between every feature and others. If the distance is less than a threshold $\delta$, the feature is treated as linear related with the other and they belong to the same cluster. Otherwise, the feature will be put in a new cluster. The procedure ``compare\_and\_join'' at the 4th line of Algorithm \ref{alg:clustering} is complicated, so we list it as Algorithm \ref{alg:compare-and-join}.
 
 \begin{algorithm}
-\caption{Feature clustering}
+\caption{Feature clustering based on Pearson correlation coefficient}
 \label{alg:clustering}
 \begin{algorithmic}[1]
 \REQUIRE ~~\\
@@ -273,7 +274,7 @@ The clustering algorithm is described as Algorithm \ref{alg:clustering} and Algo
 \end{algorithm}
 
 \begin{algorithm}
-\caption{Compare new feature to all features of all existing cluster}
+\caption{Compare new feature to all other features}
 \label{alg:compare-and-join}
 \begin{algorithmic}[1]
 \REQUIRE ~~\\
@@ -287,7 +288,7 @@ The clustering algorithm is described as Algorithm \ref{alg:clustering} and Algo
 \FOR{$k=1,2,\ldots,K$}
     \STATE Distance vector for cluster $c_k$, i.e.$\bm{d}(c_k) \gets \emptyset$
     \FOR{$j=1,2,\ldots, \text{sizeof}(c_k)$}
-        \STATE $d=\text{Corr}(D^{(f_i)}, D^{(f_j)})|$
+        \STATE $d=|\text{Corr}(D^{(f_i)}, D^{(f_j)})|$
         \STATE $\bm{d}(c_k)\text{.add}(d)$
     \ENDFOR
     \STATE $\bm{d}_{\max}(C)\text{.add}(\max{\bm{d}(c_k)})$
@@ -334,7 +335,7 @@ After the clusters are generated, next step is to find the center of these clust
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Layer 2: Feature Ranking Algorithm based on Information Gain}
+\subsection{Layer 2: Feature Ranking Based on Information Gain}
 
 After the procedure of Layer 1, we generate a group of features which are pairwise independent. In order to further refine the feature space of our data, we choose those have better classification ability. The measure of feature classification ability is the information gain. 
 
@@ -377,7 +378,7 @@ The problem of using information gain is that it tend to choose the feature whic
 \end{defn}
 
 \begin{algorithm}
-    \caption{Feature ranking}
+    \caption{Feature ranking based on information gain}
     \label{alg:feature-ranking}
     \begin{algorithmic}[1]
     \REQUIRE ~~\\
@@ -406,7 +407,9 @@ Now our feature ranking algorithm is introduced in Algorithm \ref{alg:feature-ra
 
 Since we have selected all features we need to determine whether a flow is an attack. Furthermore we want to detect detailed attack types. We choose C4.5 decision tree\cite{quinlan2014c4} as our classification algorithm. C4.5 decision tree uses information gain ratio to classify data instances. The implementation of decision tree algorithms is beyond the scope of this article. However, our method in fact previously complete the feature selection process of decision tree, so the tree classifier can use our result and speed the training process.
 
-\subsection{Compare to Dimensionality Reduction Algorithms}
+% TODO: Conclusion of all algorithms
+
+\subsection{Analysis of the Proposed Algorithm}
 
 Our method is one kind of feature selection algorithm. It is different from dimensionality reduction algorithms like PCA\cite{PCA1987}. PCA transforms the original data into a set of linearly independent representations of each dimension by linear transformation to extract the main linear components of the data, while feature selection methods do not transform the data. It just chooses the key features which can provide the most information about the data. The data transformed by PCA will lose their explanation of real meaning, while feature selection algorithms can keep the real meaning of every reserved features. 
 
@@ -419,7 +422,7 @@ In this section, the experiments and evaluation results are shown. First we desc
 
 \subsection{Experiment Setup}
 
-All experiments are running on a quad-core Intel PC with 2.90GHz CPU and 16 GB of memory. Our algorithms are implemented in Python 3.7 and the chi-square method is implemented in a Python library scikit-learn\cite{sklearn}.
+All experiments are running on a quad-core Intel PC with 2.90GHz CPU and 16 GB of memory. Our algorithms are implemented in Python 3.7 and the chi-square method is implemented in a Python library scikit-learn\cite{sklearn}. % TODO: Add 
 
 \subsection{Selected Feature subset}
 
@@ -440,7 +443,7 @@ Table \ref{tab:selected-features} shows the features selected by our method and 
         Feature Name    & Description \\
     \midrule
     Backward Packets/s          & \tabincell{l}{Number of backward packets per  \\ second} \\
-    Forward Segment Size Min    & \tabincell{l}{Minimum segment size observed in \\ the forward direction} \\
+    Forward Segment Size Min    & \tabincell{l}{Minimum segment size observed \\ in the forward direction} \\
     Init Forward Win Byts   & \tabincell{l}{Number of bytes sent in initial  \\ window in the forward direction} \\
     Flow Packets/s         & \tabincell{l}{flow packets rate that is number of \\ packets transferred per second} \\
     ACK Flag Count        & Number of packets with ACK \\
@@ -452,7 +455,7 @@ Table \ref{tab:selected-features} shows the features selected by our method and 
     Backward Packet Length Mean    & \tabincell{l}{Mean size of packet in backward \\ direction} \\
     Packet Length Min         & Minimum length of a flow \\
     Forward Packets/s          & \tabincell{l}{Number of forward packets per  \\ second} \\
-    Forward IAT Total         & \tabincell{l}{Totalal time between two packets sent \\ in the forward direction} \\
+    Forward IAT Total         & \tabincell{l}{Totalal time between two packets \\ sent in the forward direction} \\
     \bottomrule
     \end{tabular}
 \end{table}
@@ -514,7 +517,7 @@ Meanwhile this figure shows that the average training time increases slowly with
 
 \begin{figure}[!htpb]
     \centering
-    \includegraphics[scale=0.45]{fig/training-time-all.pdf}
+    \includegraphics[scale=0.4]{fig/training-time-all.pdf}
     \caption{Training Time comparison with full original data set}
     \label{fig:training-time-with-full}
 \end{figure}
@@ -598,7 +601,7 @@ As a result, the selected feature subset may contain features with inner relatio
 
 \begin{figure}[!htpb]
     \centering
-    \includegraphics[scale=0.45]{fig/training-time-chi2.pdf}
+    \includegraphics[scale=0.4]{fig/training-time-chi2.pdf}
     \caption{Training Time comparison with full original data set.}
     \label{fig:training-time-with-chi2}
 \end{figure}
@@ -624,6 +627,8 @@ Finally we analyze the confusion matrix of our method. The confusion matrix is s
     \caption{Heatmap of confusion matrix}
     \label{fig:confusion-matrix}
 \end{figure*}
+
+% TODO: change the figure to table.
 
 \section{Conclusion}
 \label{sec:conclusion}
