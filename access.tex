@@ -1,5 +1,10 @@
 \documentclass{ieeeaccess}
-\usepackage[T1]{fontenc}
+% \usepackage{siunitx}
+% \usepackage[utf8]{inputenc}
+% \usepackage[swedish]{babel}
+% \usepackage{lmodern}
+\usepackage[OT1]{fontenc}
+% \usepackage[babel=true]{microtype}
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{amsthm}
@@ -9,15 +14,18 @@
 \usepackage{textcomp}
 \usepackage{subfigure}
 \usepackage{color}
-%\usepackage{caption}
+\usepackage{rotfloat}
+\usepackage{tabularx}
+\usepackage[para]{threeparttable}
 \renewcommand{\algorithmicrequire}{\textbf{Input:}}
 \renewcommand{\algorithmicensure}{\textbf{Output:}}
 \usepackage{bm}
 \usepackage{booktabs}
 \newcommand{\tabincell}[2]{\begin{tabular}[t]{@{}#1@{}}#2\end{tabular}}
-% \newtheorem{definition}{Definition}
 \theoremstyle{definition}
 \newtheorem{defn}{Definition}
+\newcolumntype{C}{>{\centering\arraybackslash}X} % centered version of "X" type
+\setlength{\extrarowheight}{1pt}
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
@@ -27,8 +35,11 @@
 \doi{10.1109/ACCESS.2017.DOI}
 
 \title{HFS-NAD: A Hierarchical Feature Selection Scheme for Network Anomaly Detection}
-\author{\uppercase{Jiewen Mao},
-\uppercase{Yongquan Hu, Dong Jiang, Tongquan Wei, and Fuke Shen}}
+\author{
+    \uppercase{Jiewen Mao},
+    \uppercase{Yongquan Hu}, 
+    \uppercase{Dong Jiang}, 
+    \uppercase{Tongquan Wei},\IEEEmembership{Senior Member, IEEE}, \uppercase{Fuke Shen}}
 \address{School of Computer Science and Technology, East China Normal University, Shanghai 200062, China}
 
 \markboth
@@ -38,7 +49,7 @@
 \corresp{Corresponding author: Tongquan Wei (e-mail: tqwei@cs.ecnu.edu.cn).}
 
 \begin{abstract}
-    Abnormal detection of network traffic is still an important means of preventing network attacks. In the anomaly detection process, researchers need to deal with a large number of features in network traffic. In order to determine whether the network traffic is the most essential feature of the attack, in this paper we propose a hierarchical feature selection method. The method selects the essential features of network traffic through feature clustering method based on correlation coefficient and feature ranking method based on information gain, then it classifies network traffic by decision tree classifier. Experiments show that our method reduces the number of features, and shortens training time comparing with full feature set. By comparison with chi-square feature selection method, our method improves the metrics including accuracy, precision, recall and F1-score.
+    Abnormal detection of network traffic faces high dimentional of features. In order to select essential key features to identify anomaly traffic, in this paper we propose a hierarchical feature selection scheme. The proposed scheme selects the essential features of network traffic through feature clustering based on correlation coefficient and feature ranking based on information gain and gain ratio simultaneously, then it classifies network traffic by decision tree classifier. We analysis the effect of classification using selected features, and study the impact of different distance threshold. Experiments also show that the proposed scheme reduces the number of features, and shortens training time comparing with full feature set. By comparison with chi-square feature selection method, the proposed scheme improves the metrics including accuracy, precision, recall and F1-score.
 \end{abstract}
 
 \begin{keywords}
@@ -89,7 +100,7 @@ Moreover, there are different feature selection methods aim to process different
 % \begin{figure*}[!htbp]
 %     \centering
 %     \includegraphics[scale=0.8]{fig/Framework.pdf}
-%     \caption{Detection Framework}
+%     \caption{The workflow of proposed feature selection scheme.}
 %     \label{fig:framework}
 % \end{figure*}
 \Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.8]{fig/Framework.pdf}{The workflow of proposed feature selection scheme.\label{fig:framework}}
@@ -117,7 +128,7 @@ The target of the function $fs$, which is the proposed algorithm, is to find the
 
 To find such feature subset, we propose our hierarchical feature selection algorithm, which is presented in next Section.
 
-\section{Hierarchical Feature Selection Method}
+\section{Hierarchical Feature Selection Scheme}
 \label{sec:methods}
 
 In this section, we explain our design of proposed hierarchical feature selection method in turn. First of all is the overview and structure of our method. Then the source of data set and preprocessing procedure are introduced. Next we explain our feature clustering algorithm and feature ranking algorithm respectively. After that we simply introduce decision tree classifier, which is used as our model-building tools. Finally, we compare the difference of the theory of our method and dimensionality reduction algorithms like PCA.
@@ -135,7 +146,7 @@ In following subsections the details and algorithms of proposed methods are desc
 
 The data set being studied is CIC-IDS-2018\cite{cic2018}. 
 It is generated on a simulated network topology on the AWS computing platform. The network topology is shown as Figure \ref{fig:topology}. It has 5 subnet and 1 attacker network.  
-The data set consists of seven different attack scenarios: Brute-force, Heartbleed, Botnet, DoS, DDoS, Web attacks, and infiltration of the network from inside. It includes the captured network traffic and system logs of each machine, along with 76 features extracted from the captured traffic using CICFlowMeter-V3\cite{cicflowmeter}. These 76 features are shown in Table \ref{tab:features}.
+The data set consists of seven different attack scenarios: Brute-force, Heartbleed, Botnet, DoS, DDoS, Web attacks, and infiltration of the network from inside. It includes the captured network traffic and system logs of each machine, along with 76 features extracted from the captured traffic using CICFlowMeter-V3\cite{cicflowmeter}. These 76 features are shown in Table \ref{tab:features}. Their detailed meaning is listed in \cite{cic2018}.
 
 % \begin{figure}[!htbp]
 %     \centering
@@ -146,12 +157,12 @@ The data set consists of seven different attack scenarios: Brute-force, Heartble
 \Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.45]{fig/Topology.pdf}{Simulated network topology on AWS computing platform\label{fig:topology}}
 
 \begin{table*}[!htpb]
-    \caption{76 Features of CIC-IDS-2018 data set}
+    \caption{76 Features in CIC-IDS-2018 data set}
     \label{tab:features}
     \centering
     \begin{tabular}{llll}
     \toprule
-    \multicolumn{4}{c}{Features} \\
+    \multicolumn{4}{c}{Features in CIC-IDS-2018 data set} \\
     \midrule
     Flow Duration & Total Forward Packets & Total Backward Packets & Total Length Forward Packets \\
     Total Length Backward Packets & Forward Packet Length Max & Forward Packet Length Min & Forward Packet Length Mean \\
@@ -174,7 +185,6 @@ The data set consists of seven different attack scenarios: Brute-force, Heartble
     Idle Mean & Idle Std & Idle Max & Idle Min \\
     \bottomrule
     \end{tabular}
-
 \end{table*}
 
 In order to detect all types of attacks as much as possible, we integrated the network traffic data that was originally scattered in each day, and extracted 20\% of the data as our main data set while maintaining the label ratio. At the same time, in order to ensure the generalization ability of the model, we randomly select and generate data sets as many times as possible. Finally we get 10 stratified-sampled data set files. 
@@ -381,37 +391,55 @@ The problem of using information gain is that it tend to choose the feature whic
     \caption{Feature ranking based on information gain}
     \label{alg:feature-ranking}
     \begin{algorithmic}[1]
-    \REQUIRE ~~\\
-        Data set $D'$ with clustered features calculated in Algorithm \ref{alg:clustering} and \ref{alg:find-cluster-center}
-    \ENSURE ~~\\
-        A feature list $F''=\{f''_1, f''_2, \ldots, f''_k\}$ whose features are top $k$ after ranked. 
-    \STATE Calculate the entropy $H(D')$ by its labels.
-    \FOR{$i=1,2,\ldots, K$}
-        \STATE Calculate the conditional entropy $H(D'|f_i)$.
-        \STATE Calculate the information gain $$IG_{f_i} = H(D') - H(D'|f_i)$$
-        \STATE Calculate the information gain ratio 
-        $$IGR_{f_i} = IG_{f_i}/H(f_i)$$
-    \ENDFOR
-    \STATE Calculate the average information gain $\bar{IG}=(\sum IG) / K$
-    \STATE Choose the features $F_{IG}=\{f|IG_{f} > \bar{IG}\}$
-    \STATE Sort the features according to $IGR$
-    \RETURN $F''$
-    \end{algorithmic}
-    \end{algorithm}
+        \REQUIRE ~~\\
+            Data set $D'$ with clustered features calculated in Algorithm \ref{alg:clustering} and Algorithm \ref{alg:find-cluster-center}
+        \ENSURE ~~\\
+            A feature list $F''=\{f''_1, f''_2, \ldots, f''_k\}$ whose  features are top $k$ after ranked. 
+        \STATE Calculate the entropy $H(D')$ by its labels.
+        \FOR{$i=1,2,\ldots, K$}
+            \STATE Calculate the conditional entropy $H(D'|f_i)$.
+            \STATE Calculate the information gain $$IG_{f_i} = H(D') - H(D'|f_i)$$
+            \STATE Calculate the information gain ratio 
+            $$IGR_{f_i} = IG_{f_i}/H(f_i)$$
+        \ENDFOR
+        \STATE Calculate the average information gain $\bar{IG}=(\sum IG)/K$
+        \STATE Choose the features $F_{IG}=\{f|IG_{f} > \bar{IG}\}$
+        \STATE Sort the features according to $IGR$
+        \RETURN $F''$
+        \end{algorithmic}
+\end{algorithm}
 
 Now our feature ranking algorithm is introduced in Algorithm \ref{alg:feature-ranking}. We consider the information gain and information gain ratio simultaneously. First we calculate the information gain of all features which has been clustered by Algorithm \ref{alg:clustering} and \ref{alg:find-cluster-center}. Then we calculate the average information gain and sort them by their information gain ratio. Finally we select top $K$ features to compose new feature set. Here we set $K=10$. In different anomaly detection scenarios, the value of $K$ should be chosen on demand.
 
+\subsection{Summary of proposed algorithms}
 
-
-\subsection{Decision Tree Classifier}
-
+In this subsection, we summarize the proposed algorithm in a higher perspective. The complete algorithm is shown in Algorithm \ref{alg:complete-algorithm}. 
 Since we have selected all features we need to determine whether a flow is an attack. Furthermore we want to detect detailed attack types. We choose C4.5 decision tree\cite{quinlan2014c4} as our classification algorithm. C4.5 decision tree uses information gain ratio to classify data instances. The implementation of decision tree algorithms is beyond the scope of this article. However, our method in fact previously complete the feature selection process of decision tree, so the tree classifier can use our result and speed the training process.
 
-% TODO: Conclusion of all algorithms
+\begin{algorithm}
+    \caption{Complete algorithm of proposed scheme}
+    \label{alg:complete-algorithm}
+    \begin{algorithmic}[1]
+        \REQUIRE ~~\\
+            Data set $D$ of 20\% randomly sampled, labels $L$, distance threshold $\delta$, number of features to be seleced $K$.
+        \ENSURE ~~\\
+            A feature list $F''=\{f''_1, f''_2, \ldots, f''_K\}$ and decision tree model $M_T$. 
+        \STATE Drop all rows with missing values in $D$.
+        \STATE Drop all columns with zero-variance in $D$.
+        \STATE Encode all labels in $L$ to numeric values.
+        \STATE Clustering all features using Algorithm \ref{alg:clustering}. Get all clusters $C$.
+        \STATE Find centers in every clusters using Algorithm \ref{alg:find-cluster-center}. Get $F'$.
+        \STATE Sort all features in $F'$ using Algorithm \ref{alg:feature-ranking}. Get $F''$.
+        \STATE Split the data subset $D''$ with features in $F''$ into training set $D''_{\text{test}}$ and test set $D''_{\text{test}}$.
+        \STATE Train the classification model $M_T$ using decision tree algorithm with $D''_{\text{test}}$.
+        \STATE Test the classification effect using $D''_{\text{test}}$, and generate metrics $Acc$, $Pre$, $Rec$, $F_1$.
+        \RETURN $F''$, $M_T$.
+    \end{algorithmic}
+\end{algorithm}
 
 \subsection{Analysis of the Proposed Algorithm}
 
-Our method is one kind of feature selection algorithm. It is different from dimensionality reduction algorithms like PCA\cite{PCA1987}. PCA transforms the original data into a set of linearly independent representations of each dimension by linear transformation to extract the main linear components of the data, while feature selection methods do not transform the data. It just chooses the key features which can provide the most information about the data. The data transformed by PCA will lose their explanation of real meaning, while feature selection algorithms can keep the real meaning of every reserved features. 
+Our method is one kind of feature selection algorithm. It is different from dimensionality reduction algorithms like PCA\cite{PCA1987}. PCA transforms the original data into a set of linearly independent representations of each dimension by linear transformation to extract the main linear components of the data, while feature selection methods do not transform the data. It just chooses the key features which can provide the most information about the data. The data transformed by PCA will lose their explanation of real meaning, while feature selection algorithms can keep the real meaning of every reserved features. Chandrashekar et.al. \cite{Chandrashekar2014} pointed out that feature selection methods must not be compared with dimension reduction methods. Therefore we cannot compare the proposed scheme with PCA by experiments. 
 
 Meanwhile, our proposed method includes some characteristics of PCA. First, we calculate the covariance and correlation coefficient of all feature vectors, which is also used in calculation of PCA. Second, the features selected by our method are orthogonal and PCA do the same thing. Last but not least, every component generated by PCA have maximum variance, and our method contains the similar step. But in our method, the features with small variance are filtered.
 
@@ -422,7 +450,49 @@ In this section, the experiments and evaluation results are shown. First we desc
 
 \subsection{Experiment Setup}
 
-All experiments are running on a quad-core Intel PC with 2.90GHz CPU and 16 GB of memory. Our algorithms are implemented in Python 3.7 and the chi-square method is implemented in a Python library scikit-learn\cite{sklearn}. % TODO: Add 
+All experiments are running on a quad-core Intel PC with 2.90GHz CPU and 16 GB of memory. Our algorithms are implemented in Python 3.7 and the chi-square method is implemented in a Python library scikit-learn\cite{sklearn}. 
+
+The conducted experiments are about the following aspects:
+
+\begin{itemize}
+    \item We compare the training time and classification metrics of the features selected by this algorithm and all the features in the complete data set on the decision tree classifier respectively.
+    \item We compare the training time and classification index of the features selected by this algorithm and the features selected by the chi-square method on the decision tree classifier when the number of features is the same. 
+\end{itemize}
+
+The related classification metrics including accuracy(Acc), precision(Pre), recall(Rec) and F1-score($F_1$). Their definitions are listed as follows:
+
+\begin{defn}[Accuracy]
+    In classification problems, we denote $TP$ as true positve prediction, $FP$ as false positive prediction, $TN$ as true negative prediction and $FN$ as false negative prediction.
+
+    The accuracy is defined as the ratio of $TP+TN$ in all test instances, which is
+    \begin{equation}
+        \text{Acc}=\frac{TP+TN}{TP+TN+FP+FN}
+    \end{equation}
+    which means the all true instances classified in all test instances.
+\end{defn}
+
+\begin{defn}[Precision]
+    The precision is defined as the ratio of $TP$ in all positive instances classified by the model, which is
+    \begin{equation}
+        \text{Pre} = \frac{TP}{TP+FP}
+    \end{equation}
+    which means the all true positive instances classified in all positve instances.
+\end{defn}
+
+\begin{defn}[Recall]
+    The recall is defined as the ratio of $TP$ in all real positive instances, which is
+    \begin{equation}
+        \text{Rec} = \frac{TP}{TP+FN}
+    \end{equation}
+\end{defn}
+
+\begin{defn}[F1-score]
+    The F1-score is defined as the harmonic average of precision and recall.
+    \begin{equation}
+        F_1 = \frac{2}{\frac{1}{\text{Pre}} + \frac{1}{\text{Rec}}}
+    \end{equation}
+    which is a trade-off between the precision and recall.
+\end{defn}
 
 \subsection{Selected Feature subset}
 
@@ -464,13 +534,6 @@ Table \ref{tab:selected-features} shows the features selected by our method and 
 
 In our algorithm, an important parameter is the distance threshold $\delta$. It takes effects on the number of clusters generated in Algorithm \ref{alg:clustering}. Figure \ref{fig:different-threshold} shows the result of number of generated clusters from 10 split data set files under different threshold $\delta$. We set $\delta$ from 0.7 to 0.95 with interval 0.05 between any two values. The average number of clusters are listed in Table \ref{tab:mean-cluster-number}. Here a trade-off exists about the number of clusters and the number of features in every cluster. If $\delta$ is set too small, the number of clusters will be small too, however many features with weak correlation will be merged in the same cluster and it will finally impact subsequent feature ranking and decision tree learning procedures. Meanwhile, a larger $\delta$ will produce too many clusters which contains only one feature, because the condition is too stricted to merge features. In our practice, setting $\delta$ between 0.8 and 0.9 is a better choicce.
 
-\begin{figure}
-    \centering
-    \includegraphics[scale=0.5]{fig/Cluster-Number-in-diff-delta.pdf}
-    \caption{Number of clusters in 10 split data set under the effect of different distance threshould $\delta$. }
-    \label{fig:different-threshold}
-\end{figure}
-
 \begin{table}
     \caption{Average number of clusters under different distance threshold}
     \label{tab:mean-cluster-number}
@@ -483,6 +546,15 @@ In our algorithm, an important parameter is the distance threshold $\delta$. It 
         \bottomrule
     \end{tabular}
 \end{table}
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.5]{fig/Cluster-Number-in-diff-delta.pdf}
+    \caption{Number of clusters in 10 split data set under the effect of different distance threshould $\delta$. }
+    \label{fig:different-threshold}
+\end{figure}
+
+
 
 \subsection{Compare with training time and metrics on full original data set}
 
@@ -524,42 +596,7 @@ Meanwhile this figure shows that the average training time increases slowly with
 
 \subsubsection{Metrics}
 
-The metrics of model include accuracy, precision, recall and f1-score. Related definitions are listed below:
-
-\begin{defn}[Accuracy]
-    In classification problems, we denote $TP$ as true positve prediction, $FP$ as false positive prediction, $TN$ as true negative prediction and $FN$ as false negative prediction.
-
-    The accuracy is defined as the ratio of $TP+TN$ in all test instances, which is
-    \begin{equation}
-        \text{Acc}=\frac{TP+TN}{TP+TN+FP+FN}
-    \end{equation}
-    which means the all true instances classified in all test instances.
-\end{defn}
-
-\begin{defn}[Precision]
-    The precision is defined as the ratio of $TP$ in all positive instances classified by the model, which is
-    \begin{equation}
-        \text{Pre} = \frac{TP}{TP+FP}
-    \end{equation}
-    which means the all true positive instances classified in all positve instances.
-\end{defn}
-
-\begin{defn}[Recall]
-    The recall is defined as the ratio of $TP$ in all real positive instances, which is
-    \begin{equation}
-        \text{Rec} = \frac{TP}{TP+FN}
-    \end{equation}
-\end{defn}
-
-\begin{defn}[F1-score]
-    The F1-score is defined as the harmonic average of precision and recall.
-    \begin{equation}
-        F_1 = \frac{2}{\frac{1}{\text{Pre}} + \frac{1}{\text{Rec}}}
-    \end{equation}
-    which is a trade-off between the precision and recall.
-\end{defn}
-
-These four metrics of our methods under different $\delta$ is shown in Figure , along with the metrics of the model trained on full original data set. The result is shown in Figure \ref{fig:metrics-full} and Table \ref{tab:metric-full}. The average accuracy of our method is 97.94\%, which is a little higher than the accuracy on full data set. The average precision, recall and F1-score are 79.46\%, 80.73\% and 79.33\% respectively. They are all higher than the results on full data set. 
+The four metrics of our methods under different $\delta$ is shown in Figure , along with the metrics of the model trained on full original data set. The result is shown in Figure \ref{fig:metrics-full} and Table \ref{tab:metric-full}. The average accuracy of our method is 97.94\%, which is a little higher than the accuracy on full data set. The average precision, recall and F1-score are 79.46\%, 80.73\% and 79.33\% respectively. They are all higher than the results on full data set. 
 
 The result proved that the feature selected by our method can help improving performance of decision tree classifier comparing with using tree classifier directly on the full original data set.
 
@@ -617,18 +654,61 @@ The classification metrics comparison is shown in Figure\ref{fig:metrics-chi2} a
     \label{fig:metrics-chi2}
 \end{figure}
 
+% \begin{table*}[!h]
+%     \centering
+%     \caption{Confusion matrix of classification results.}
+%     \label{tab:confusion-matrix}
+%     \begin{tabular}{c}
+%         \includegraphics[scale=0.45]{fig/confusion-matrix-p.pdf}
+%     \end{tabular}% 
+% \end{table*}
+
+\begin{table*}
+    \centering
+    \begin{threeparttable}[b]
+        \caption{Confusion Matrix of classification results}
+        \label{tab:confusion-matrix}
+        \begin{tabularx}{\textwidth}{@{}l*{15}{C}c@{}}
+            \toprule
+            Labels & Benign & Bot & Web\tnote{1} & XSS\tnote{2} & HOIC\tnote{3} & LOIC-UDP\tnote{4} & LOIC-HTTP\tnote{5} & Slow-HTTPTest\tnote{6} & Hulk\tnote{7} & Infilter-ation & Slow-loris\tnote{8} & SSH\tnote{9} & Golden-Eye\tnote{10} & SQL\tnote{11} & FTP\tnote{12} \\
+            \midrule
+            Benign & 5320195 & 1135 & 65 & 22 & 10 & 0 & 185 & 33 & 17 & 8 & 76 & 3 & 34205 & 13 & 11 \\
+            Bot & 626 & 113842 & 0 & 7 & 0 & 0 & 4 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+            Web & 66 & 0 & 161 & 0 & 0 & 0 & 2 & 0 & 0 & 0 & 0 & 0 & 1 &  10 & 0 \\
+            XSS & 20 & 9 & 0 & 57 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 &  4 & 0 \\
+            HOIC & 3 & 0 & 0 & 0 & 274397 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+            LOIC-UDP & 2 & 0 & 0 & 0 & 0 & 537 & 151 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+            LOIC-HTTP & 164 & 7 & 0 & 0 & 0 & 160 & 230148 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
+            SlowHTTPTest & 6 & 0 & 0 & 0 & 0 & 0 & 0 & 16567 & 2 & 0 & 25 & 0 & 0 & 0 & 0 \\
+            Hulk & 11 & 0 & 0 & 0 & 0 & 0 & 0 & 3 & 184755 & 0 & 0 & 0 & 1 & 0 & 0 \\
+            Infilteration & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 29100 & 0 & 26860 & 0 & 0 & 0 \\
+            Slowloris & 102 & 0 & 0 & 0 & 0 & 0 & 0 & 18 & 1 & 0 & 4279 & 0 & 0 & 0 & 0 \\
+            SSH & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 8747 & 0 & 68593 & 0 & 0 & 0 \\
+            GoldenEye & 58771 & 8 & 0 & 0 & 0 & 0 & 1 & 1 & 0 & 3 & 0 & 1 & 5408 & 1 & 0 \\
+            SQL & 17 & 1 & 2 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 10 & 0 \\
+            FTP & 13 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 9 & 0 & 0 & 75016 \\
+            \bottomrule
+        \end{tabularx}
+        \begin{tablenotes}
+            \item[1] BruteForce-Web
+            \item[2] BruteForce-XSS
+            \item[3] DOS attacks-HOIC
+            \item[4] DOS attacks-LOIC-UDP
+            \item[5] DOS attacks-LOIC-HTTP
+            \item[6] DOS attacks-SlowHTTPTest
+            \item[7] DOS attacks-Hulk 
+            \item[8] DOS attacks-Slowloris
+            \item[9] SSH-BruteForce
+            \item[10] DOS attacks-GoldenEye
+            \item[11] SQL Injection
+            \item[12] FTP-BruteForce          
+        \end{tablenotes}
+    \end{threeparttable}
+\end{table*}
+
 \subsection{Confusion Matrix}
 
-Finally we analyze the confusion matrix of our method. The confusion matrix is shown in Figure \ref{fig:confusion-matrix}. We add the confusion matirx of all split data set. The matrix shows that our method can mainly classify the data into correct class label. However, there are still many false positive and false negative instances. The most severe miss happens on the label ``DOS attacks-GoldenEye'' and ``Infilteration''. The flow patterns of these two situation performs similar with benign flow pattern so that our method could not discriminate them properly. The flow patterns of these two situation should be further study and new method should be proposed to detect them.  
-
-\begin{figure*}
-    \centering
-    \includegraphics[scale=0.5]{fig/confusion-matrix.pdf}
-    \caption{Heatmap of confusion matrix}
-    \label{fig:confusion-matrix}
-\end{figure*}
-
-% TODO: change the figure to table.
+Finally we analyze the confusion matrix of our method. The confusion matrix is shown in Tabel \ref{tab:confusion-matrix}. We add the confusion matirx of all split data set. The matrix shows that our method can mainly classify the data into correct class label. However, there are still many false positive and false negative instances. The most severe miss happens on the label ``DOS attacks-GoldenEye'' and ``Infilteration''. The flow patterns of these two situation performs similar with benign flow pattern so that our method could not discriminate them properly. The flow patterns of these two situation should be further study and new method should be proposed to detect them.  
 
 \section{Conclusion}
 \label{sec:conclusion}
