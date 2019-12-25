@@ -34,7 +34,7 @@
 \history{Date of publication xxxx 00, 0000, date of current version xxxx 00, 0000.}
 \doi{10.1109/ACCESS.2017.DOI}
 
-\title{HFS-NAD: A Hierarchical Feature Selection Scheme for Network Anomaly Detection}
+\title{A Hierarchical Feature Selection Scheme for Network Anomaly Detection}
 \author{
     \uppercase{Jiewen Mao},
     \uppercase{Yongquan Hu}, 
@@ -49,7 +49,11 @@
 \corresp{Corresponding author: Tongquan Wei (e-mail: tqwei@cs.ecnu.edu.cn).}
 
 \begin{abstract}
-    Abnormal detection of network traffic faces high dimentional of features. In order to select essential key features to identify anomaly traffic, in this paper we propose a hierarchical feature selection scheme. The proposed scheme selects the essential features of network traffic through feature clustering based on correlation coefficient and feature ranking based on information gain and gain ratio simultaneously, then it classifies network traffic by decision tree classifier. We analysis the effect of classification using selected features, and study the impact of different distance threshold. Experiments also show that the proposed scheme reduces the number of features, and shortens training time comparing with full feature set. By comparison with chi-square feature selection method, the proposed scheme improves the metrics including accuracy, precision, recall and F1-score.
+    With the development of Internet applications and the widespread use of the Internet of Things, anomaly traffic is also affected by the amplification effect. 
+    Currently, anomaly detection of network traffic faces high dimentional of features. In order to select essential key features to identify anomaly traffic, in this paper we propose a hierarchical feature selection scheme. 
+    The proposed scheme selects the essential features of network traffic through feature clustering based on correlation coefficient and feature ranking based on information gain and gain ratio simultaneously, then it classifies network traffic by decision tree classifier. 
+    We analysis the effect of classification using selected features, and study the impact of different distance threshold. Experiments also show that the proposed scheme reduces the number of features, and shortens training time comparing with full feature set. 
+    By comparison with chi-square feature selection method, the proposed scheme improves the metrics including accuracy, precision, recall and F1-score.
 \end{abstract}
 
 \begin{keywords}
@@ -65,13 +69,14 @@
 \IEEEPARstart{W}{hile} the Internet of Things, 5G technology, the improvement of network bandwidth and new network security testing tools bring convenience to people, malicious traffic and network attacks are still serious threats to Internet users and servers. 
 On March 2015, GitHub faced a massive DDoS attack. The attack lasted for one week and caused significant damages\cite{github-2015}. On October 2016, Dyn's DNS servers was attacked for two hours, during that time, internet users directed to Dyn servers were unable to reach some of the marquee brands of the internet\cite{dyn-2016}. On May 2017, the WannaCry ransomware attack bursted and over 200,000 compromised computers across 150 countries were influenced by this virus and economic losses from the cyber attack could reach up to 4 billion dollars\cite{wannacry-2017}.
 
-Traditional anomaly detection methods often only use the header information of the network packets. Wang et.al. \cite{Wang2020CS} proposed a dynamic MLP-based attack detection method. The feature selection process of this paper uses backward selection filter method. It deletes the features which make the accuracy of MLP decreasing more than threshold and the remainings are the selected features. However the method in \cite{Wang2020CS} only uses the header information including source IP, TCP flag, source port, destination port, etc.. Urmila et al.\cite{Urmila2017} a Distributed collaboration detection scheme that combines the advantages of Anomaly and Signature based method by capturing the packet header in real time. AL-Hawawreh\cite{MunaSulieman2017} discussed the SYN flood attack in virtual cloud and detects it based on new features that extracted from TCP/IP header. Alsharafi et al.\cite{Alsharafi2020} investigates a Normal Profile Updating Method (NPUM) for enhancing the PHAD based IDS model, which updates normal profile of anomaly IDS using further processing of both the normal and abnormal data identified by anomaly detector.
+Traditional anomaly detection schemes often only use the header information of the network packets. Wang et.al. \cite{Wang2020CS} proposed a dynamic MLP-based attack detection method. The feature selection process of this paper uses backward selection filter method. It deletes the features which make the accuracy of MLP decreasing more than threshold and the remainings are the selected features. However the method in \cite{Wang2020CS} only uses the header information including source IP, TCP flag, source port, destination port, etc.. Urmila et al.\cite{Urmila2017} a Distributed collaboration detection scheme that combines the advantages of Anomaly and Signature based method by capturing the packet header in real time. AL-Hawawreh\cite{MunaSulieman2017} discussed the SYN flood attack in virtual cloud and detects it based on new features that extracted from TCP/IP header. Alsharafi et al.\cite{Alsharafi2020} investigates a Normal Profile Updating Method (NPUM) for enhancing the PHAD based IDS model, which updates normal profile of anomaly IDS using further processing of both the normal and abnormal data identified by anomaly detector.
+
 However, diverse types of network anomalies cannot be distinguish effectively only by packet header information. Even in some types of attacks the malicious users may construct and send the packets elaborately to escape the detection from intrusion detection systems(IDS). Once these packets pass the prevension and propagate in the network, the target computer or network device will be compromised.
 To solve this problem, this paper takes the statistical information extracted by aggregated flows besides the header information. Different types of anomalies have different statistical patterns. For example, (D)DoS attacks may have larger counts of packets but stable flow duration, while in brute-force attack the packet counts will be smaller but the curve of flow duration fluctuates drasticly. 
 
 Another problem of statistical detection methods are dimensional explosion. A flow may have more than 30 features in the header alone. Considering the statistical characteristics of all packets in flows, number of features in a network data set will grow rapidly. There may be linear relationships or other associations between these features. If we take all features into consideration, on one hand the efficient of learning and modeling algorithms will decrease, on the other hand it is hard to find the intrinsic cause that can determine whether a flow is an attack.
 
-This paper proposes a hierarchical feature selection method, including three steps of data preprocessing, feature clustering and feature ranking. First, we preprocess the network traffic data. This procedure includes removing features that are clearly not available for statistical analysis, filling or dropping missing data, and encoding labels to numerical values. Second, we propose a feature clustering algorithm based on Pearson correlation coefficient to cluster the features with strong correlation and then select the cluster center. The third step will continue the second step, a feature rank algorithm based on information gain and information gain ratio is used to further filter the features. Finally, we use the decision tree (DT) as a classifier and conduct experiments among our proposed method, the features selected by chi-square testing algorithm and the full feature set. We compare them by the training time and training metrics including accuracy, precision, recall and F1-score. 
+This paper proposes a hierarchical feature selection scheme, including three steps of data preprocessing, feature clustering and feature ranking. First, we preprocess the network traffic data. This procedure includes removing features that are clearly not available for statistical analysis, filling or dropping missing data, and encoding labels to numerical values. Second, we propose a feature clustering algorithm based on Pearson correlation coefficient to cluster the features with strong correlation and then select the cluster center. The third step will continue the second step, a feature rank algorithm based on information gain and information gain ratio is used to further filter the features. Finally, we use the decision tree (DT) as a classifier and conduct experiments among our proposed method, the features selected by chi-square testing algorithm and the full feature set. We compare them by the training time and training metrics including accuracy, precision, recall and F1-score. 
 
 The contributions of our paper can be summarized as follow:
 
@@ -455,8 +460,9 @@ All experiments are running on a quad-core Intel PC with 2.90GHz CPU and 16 GB o
 The conducted experiments are about the following aspects:
 
 \begin{itemize}
-    \item We compare the training time and classification metrics of the features selected by this algorithm and all the features in the complete data set on the decision tree classifier respectively.
-    \item We compare the training time and classification index of the features selected by this algorithm and the features selected by the chi-square method on the decision tree classifier when the number of features is the same. 
+    \item The effect of different distance thresholds on the number of clusters. We compare the number of clusters in different threshold $\delta$, then explain how to choose best threshold to improve the classification metrics best. 
+    \item The effect of different size feature spaces on classification results. We compare the training time and classification metrics of the features selected by this algorithm and all the features in the complete data set on the decision tree classifier respectively.
+    \item The effect of feature space of the same size but different elements on classification results. We compare the training time and classification index of the features selected by this algorithm and the features selected by the chi-square method on the decision tree classifier when the number of features is the same. 
 \end{itemize}
 
 The related classification metrics including accuracy(Acc), precision(Pre), recall(Rec) and F1-score($F_1$). Their definitions are listed as follows:
@@ -717,9 +723,99 @@ This paper proposed a novel hierarchical feature selection method for network an
 
 In the future, we will continue researching the methods of real-time network data analysis and real-time model of training and detection for network traffic.
 
-\bibliographystyle{IEEEtran}
-% argument is your BibTeX string definitions and bibliography database(s)
-\bibliography{bibtex/bib/mybib.bib}{}
+% \bibliographystyle{IEEEtran}
+% % argument is your BibTeX string definitions and bibliography database(s)
+% \bibliography{bibtex/bib/mybib.bib}{}
+\begin{thebibliography}{1}
+
+    \bibitem{Maza2018}
+    M.~Sofiane and T.~Mohamed, ``Feature selection algorithms in intrusion detection system: A survey,'' \emph{KSII Transactions on Internet and Information Systems}, vol. 12, no. 10, pp. 5079-5099, 2018.
+
+    \bibitem{Chandrashekar2014}
+    G.~Chandrashekar and F.~Sahin, ``A survey on feature selection methods,'' \emph{Computers and Electrical Engineering}, vol. 40, pp. 16--28, 2014.
+
+    \bibitem{github-2015}
+    GitHub triumphant over its ‘largest ever’ cyber pummeling. [Online]. Available: \\ https://fortune.com/2015/04/03/github-ddos-china/
+
+    \bibitem{dyn-2016}
+    Read Dyn’s Statement on the 10/21/2016 DNS DDoS Attack. [Online]. Available: \\ https://dyn.com/blog/dyn-statement-on-10212016-ddos-attack/
+
+    \bibitem{wannacry-2017}
+    WannaCry ransomware attack. [Online]. Available: \\ https://en.wikipedia.org/wiki/WannaCry\_ransomware\_attack
+
+    \bibitem{cic2018}
+    I.~Sharafaldin, A. H.~Lashkari and A. A.~Ghorbani, ``Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization''\emph{Proceedings of International Conference on Information Systems Security and Privacy (ICISSP)}, pp. 108--116, 2018.
+
+    \bibitem{cicflowmeter}
+    CICFlowMeter. [Online]. Available: \\ https://www.unb.ca/cic/research/applications.html\#CICFlowMeter
+
+    \bibitem{sklearn}
+    scikit-learn: machine learning in Python. [Online]. Available: \\ https://scikit-learn.org/
+
+    \bibitem{Law2004}
+    M.H.C.~Law, M.A.T.~Figueiredo and A.K.~Jain, ``Simultaneous Feature Selection and Clustering Using Mixture Models,'' \emph{IEEE Transactions on Pattern Analysis and Machine Intelligence}, vol. 26, no. 9, pp. 1154--1166, 2004.
+
+    \bibitem{Wu2017}
+    J.~Wu and C.~Li, ``Feature Selection Based on Features Unit,'' \emph{Proceedings of International Conference on Information Science and Control Engineering}, pp. 330--333, 2017.
+
+    \bibitem{Shi2017}
+    H.~Shi, H.~Li, D.~Zhang, C.~Cheng and W.~Wu, ``Efficient and robust feature extraction and selection for traffic classification,'' \emph{Computer Networks}, vol. 119, pp. 1--16, 2017.
+
+    \bibitem{Shi2018}
+    H.~Shi, H.~Li, D.~Zhang, C.~Cheng and X.~Cao, ``An efficient feature generation approach based on deep learning and feature selection techniques for traffic classification,'' \emph{Computer Networks}, vol. 132, pp. 81--98, 2018.
+
+    \bibitem{Dong2017}
+    Y.~Dong, J.~Zhao and J.~Jin, ``Novel feature selection and classification of Internet video traffic based on a hierarchical scheme,'' \emph{Computer Networks}, vol. 119, pp. 102--111, 2017.
+
+    \bibitem{Ke2018}
+    W.~Ke, Y.~Wang, X.~Lei and B. Wei, ``Spark-Based Feature Selection Algorithm of Network Traffic Classification,'' \emph{Proceedings of International Conference on Computational Intelligence and Security}, pp. 140--144, 2017.
+
+    \bibitem{Taskin2017}
+    G.~Taskin, H.~Kaya and L.~Bruzzone, ``Feature Selection Based on High Dimensional Model Representation for Hyperspectral Images,'' \emph{IEEE Transactions on Image Processing}, vol. 26, no. 6, pp. 2918--2928, 2017.
+
+    \bibitem{Valadi2019}
+    J.K.~Valadi, P.T.~Ovhal, and K.J.~Rathore, ``A Simple Method of Solution For Multi-label Feature Selection,'' \emph{Proceedings of IEEE International Conference on Electrical, Computer and Communication Technologies}, pp. 1--4, 2019.
+
+    \bibitem{Han2020}
+    X.~Han, P.~Liu,L.~Wang and D.~Li, ``Unsupervised feature selection via graph matrix learning and the low-dimensional space learning for classification,'' \emph{Engineering Applications of Artificial Intelligence}, to be published. DOI: 10.1016/j.engappai.2019.103283.
+
+    \bibitem{Yang2018}
+    X.~Yang, Q.~Wang and Y.~Wang, ``Feature selection based on network maximal correlation,'' \emph{Proceedings of International Symposium on Wireless Personal Multimedia Communications}, pp. 448--452, 2017.
+
+    \bibitem{Yang2018a}
+    S.~Yang, F.~Nie and X.~Li, ``Unsupervised Feature Selection with Local Structure Learning,'' \emph{Proceedings of IEEE International Conference on Image Processing}, pp. 3398--3402, 2018.
+
+    \bibitem{Liu2018}
+    Z.~Liu, Y.~Li and W.~Ji, ``Differential Private Ensemble Feature Selection,'' \emph{Proceedings of International Joint Conference on Neural Networks}, pp. 1--6, 2018.
+
+    \bibitem{Ferriyan2017}
+    A.~Ferriyan, A.H.~Thamrin, K.~Takeda and J.~Murai, ``Feature selection using genetic algorithm to improve classification in network intrusion detection system,'' \emph{Proceedings of International Electronics Symposium on Knowledge Creation and Intelligent Computing}, pp. 46--49, 2017.
+
+    \bibitem{Yassine2017}
+    A.~Yassine, C.~Mohamed and A.~Zinedine, ``Feature selection based on pairwise evalution,'' \emph{Proceedings of Intelligent Systems and Computer Vision}, pp. 1--6, 2017.
+
+    \bibitem{Wang2020CS}
+    M.~Wang, Y.Lu, and J.Qin, ``A Dynamic MLP-Based DDoS Attack Detection Method Using Feature Selection and Feedback,'' \emph{Computers \& Security}, to be published. DOI: 10.1016/j.cose.2019.101645.
+
+    \bibitem{Shannon1948}
+    C.E.~Shannon, ``A Mathematical Theory of Communication,'' \emph{Bell System Technical Journal}, vol. 27, no. 3, pp. 379--423, 1948.
+
+    \bibitem{quinlan2014c4}
+    J.R.~Quinlan, ``C4.5: programs for machine learning,'' Elsevier, 2014.
+
+    \bibitem{PCA1987}
+    S.~Wold, K.~Esbensen and P.~Geladi, ``Principal component analysis,'' \emph{Chemometrics and Intelligent Laboratory Systems}, vol. 2, no. 1--3, pp. 37--52, 1987.
+
+    \bibitem{Alsharafi2020}
+    W.M.~Alsharafi, M.N.~Omar, N.A.~Al-Majmar and Y.~Fazea, ``Normal Profile Updating Method for Enhanced Packet Header Anomaly Detection,'' \emph{Emerging Trends in Intelligent Computing and Informatics}, pp. 734--737, 2019.
+
+    \bibitem{MunaSulieman2017}
+    M.S.~Al-Hawawreh, ``SYN Flood Attack Detection in Cloud Environment Based on TCP/IP Header Statistical Features,'' \emph{Proceedings of International Conference on Information Technology}, pp. 236--243, 2017.
+
+    \bibitem{Urmila2017}
+     T.S.~Urmila and R.~Balasubramanian, ``A novel framework for intrusion detection using distributed collaboration detection scheme in packet header data,'' \emph{International Journal of Computer Networks and Communications}, vol. 9, no. 4, pp. 97--112, 2017.
+
+\end{thebibliography}
 
 
 \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{photo/jiewenmao.jpg}}]{Jiewen Mao}
