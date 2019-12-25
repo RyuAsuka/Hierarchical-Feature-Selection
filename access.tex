@@ -3,7 +3,7 @@
 % \usepackage[utf8]{inputenc}
 % \usepackage[swedish]{babel}
 % \usepackage{lmodern}
-\usepackage[OT1]{fontenc}
+\usepackage[T1]{fontenc}
 % \usepackage[babel=true]{microtype}
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
@@ -49,20 +49,13 @@
 \corresp{Corresponding author: Tongquan Wei (e-mail: tqwei@cs.ecnu.edu.cn).}
 
 \begin{abstract}
-Network traffic anomaly detection has become a necessity due to proliferation of information technologies across safety critical applications. However, conventional traffic anomaly detection mechanisms primarily rely on data with very high dimension. In this paper, we propose an efficient network anomaly detection mechanism by selecting essential features that can quickly detect multiple types of anomalies without compromising the detection accuracy.
-The proposed scheme selects key features by clustering and ranking all variables, and classifies network traffic to detect anomalies based on selected features.
-
-Experimental results show that 
-
- we propose a hierarchical feature selection scheme to reduce the dimension of data and select essential features of network traffic.
+    Network traffic anomaly detection has become a necessity due to proliferation of information technologies across safety critical applications. 
+    However, conventional traffic anomaly detection mechanisms primarily rely on traffic data either with only headers of packets, which makes the accuracy depressed, or with very high dimension, whose cost of high accuracy is lower efficiency. 
+    In this paper, we propose an efficient network anomaly detection mechanism by selecting essential features that can quickly detect multiple types of anomalies without compromising the detection accuracy.
+    The proposed scheme selects key features by clustering and ranking all variables, and classifies network traffic to detect anomalies based on selected features.
+    Experimental results show that the proposed scheme can decrease the training time and increase the classification metrics comparing to training the classifier with full data set. 
+    Under the condition of same number of selected features, the proposed method can also significantly increase the classification metrics including accuracy, precision, recall and F1-score.
 \end{abstract}
-
-
-
-
-
-
-
 
 \begin{keywords}
     feature selection, abnormal detection, feature clustering, correlation coefficient, information gain, decistion tree
@@ -151,9 +144,7 @@ In this section, we explain our design of proposed hierarchical feature selectio
 The system framework of this paper is shown as Fig. \ref{fig:framework}.
 The proposed method is the first block in the figure, and it contains three steps or layers: The first step is preprocessing, which cleans data set and makes it to a better form to be processed in next two steps. The second step is feature clustering, which puts all features with potential linear correlation into the same cluster, then all cluster centers are chosen as the representative of every clusters. The third step is feature ranking, which further rank all features selected in step 2 and choose the top $k$ features as the final feature set.
 
-After the three-steps processing, the refined data subset is divided into training set and test set, then they are trained and tested via decision tree classifier and our detection model is generated.
-
-In following subsections the details and algorithms of proposed methods are described.
+After the three-steps processing, the refined data subset is divided into training set and test set, then they are trained and tested via decision tree classifier and our detection model is generated. In following subsections the details and algorithms of proposed methods are described.
 
 \subsection{Preprocessing Dataset}
 
@@ -202,9 +193,7 @@ The data set consists of seven different attack scenarios: Brute-force, Heartble
 
 In order to detect all types of attacks as much as possible, we integrated the network traffic data that was originally scattered in each day, and extracted 20\% of the data as our main data set while maintaining the label ratio. At the same time, in order to ensure the generalization ability of the model, we randomly select and generate data sets as many times as possible. Finally we get 10 stratified-sampled data set files.
 
-At this moment, the data set is still unavailable because there are some useless nominal features which are not suitable for statistical analyzing, and there may be missing values in the data set. We must remove these features to prevent them interfering proposed algorithms.
-
-Our preprocessing strategy is described as follows:
+At this moment, the data set is still unavailable because there are some useless nominal features which are not suitable for statistical analyzing, and there may be missing values in the data set. We must remove these features to prevent them interfering proposed algorithms. Our preprocessing strategy is described as follows:
 
 \subsubsection{Data cleaning}
 The target of this paper is to find the decisive statistical features which can determine whether a network flow is an attack.
@@ -226,8 +215,6 @@ Most anomaly detection models perform as classifiers which predict output labels
 
 \subsection{Layer 1: Feature Clustering Based on Pearson Correlation Coefficient}
 
-% Many features of the original data set are derived from others. According to our observation, there are linear correlations between many features. The most important step of our method is to merge these linear related features via clustering method. First the concept of correlation coefficient is reviewed.
-
 According to our observation, many features are potentially linear related. For example, in Figure \ref{fig:correlated-variables}, we pick up two pairs of features to show their potential linear correlation. The left part shows that features ``Flow IAT Mean'' and ``Forward IAT Mean'' may have positive correlation. In fact the interval time of a whole flow consists of the forward flow. In the right part, we can see that the feature ``Backward Segment Size Average'' is almost equals to ``Backward Packet Length Mean''. We can treat them as the same feature.
 
 The redundancy of features is produced by the featrue extraction tool. If we use the whole data set to train our model, the redundant features on one hand may increase the computation and spend more time, on the other hand these redundant features cannot import any new informations into our model. So it is necessary to merge these redundant features. In this paper, we use clustering method to reach this target.
@@ -243,15 +230,16 @@ First the concept of correlation coefficient is reviewed.
 
 \begin{defn}[Correlation Coefficient]
     If the variances $\sigma^2_X$ and $\sigma_Y^2$ of two random variables $X$ and $Y$ exists and they satisfy that $\sigma^2_X > 0$ and $\sigma^2_Y > 0$, the correlation coefficient of $X$ and $Y$ can be denoted as
-\begin{equation}
-    \text{Corr}(X, Y) = \frac{\text{Cov}(X, Y)}{\sigma_X \sigma_Y}
-\end{equation}
-where $\text{Cov}(X, Y)$ is the covariation of $X$ and $Y$. And
-$$\text{Corr}(X, Y) \begin{cases}
+    \begin{equation}
+        \text{Corr}(X, Y) = \frac{\text{Cov}(X, Y)}{\sigma_X \sigma_Y}
+    \end{equation}
+    where $\text{Cov}(X, Y)$ is the covariation of $X$ and $Y$. And
+    $$\text{Corr}(X, Y) 
+    \begin{cases}
     > 0, & X \text{ and } Y \text{ are positive correlated.}\\
     = 0, & X \text{ and } Y \text{ are not linear correlated.} \\
     < 0, & X \text{ and } Y \text{ are negative correlated.}
-\end{cases}$$
+    \end{cases}$$
 \end{defn}
 
 Then we use the correlation coefficient to define the distance of any two features.
@@ -443,8 +431,8 @@ Since we have selected all features we need to determine whether a flow is an at
         \STATE Clustering all features using Algorithm \ref{alg:clustering}. Get all clusters $C$.
         \STATE Find centers in every clusters using Algorithm \ref{alg:find-cluster-center}. Get $F'$.
         \STATE Sort all features in $F'$ using Algorithm \ref{alg:feature-ranking}. Get $F''$.
-        \STATE Split the data subset $D''$ with features in $F''$ into training set $D''_{\text{test}}$ and test set $D''_{\text{test}}$.
-        \STATE Train the classification model $M_T$ using decision tree algorithm with $D''_{\text{test}}$.
+        \STATE Split the data subset $D''$ with features in $F''$ into training set $D''_{\text{train}}$ and test set $D''_{\text{test}}$.
+        \STATE Train the classification model $M_T$ using decision tree algorithm with $D''_{\text{train}}$.
         \STATE Test the classification effect using $D''_{\text{test}}$, and generate metrics $Acc$, $Pre$, $Rec$, $F_1$.
         \RETURN $F''$, $M_T$.
     \end{algorithmic}
@@ -727,7 +715,9 @@ Finally we analyze the confusion matrix of our method. The confusion matrix is s
 \section{Conclusion}
 \label{sec:conclusion}
 
-This paper proposed a novel hierarchical feature selection method for network anomaly detection. We applied feature clustering algorithm using correlation-coefficient-based distance between features on network flow traffic data set, then ranked these feature cluster centers using information gain and information gain ratio simultaneously. After that we chose decision tree as our training algorithm to train the model based on the selected feature set. The experiment results shows our method can select more critical features which can determine whether a network flow is an attack.
+Dimension disaster of network traffic data severely decrease the efficiency and accuracy of network anomaly detection mechanisms. In this paper we propose a novel efficient feature-selection-based network anomaly detection scheme. 
+Essential key features of network traffic are selected by feature clustering and feature ranking algorithms orderly, then C4.5 decision tree classifier is used to classify the refined data subset. 
+The experimental results show that our scheme can select more critical features which makes training time decreasing when training the decision tree classifier, and all classification metrics increases. 
 
 In the future, we will continue researching the methods of real-time network data analysis and real-time model of training and detection for network traffic.
 
@@ -737,10 +727,10 @@ In the future, we will continue researching the methods of real-time network dat
 \begin{thebibliography}{1}
 
     \bibitem{Maza2018}
-    M.~Sofiane and T.~Mohamed, ``Feature selection algorithms in intrusion detection system: A survey,'' \emph{KSII Transactions on Internet and Information Systems}, vol. 12, no. 10, pp. 5079-5099, 2018.
+    M. Sofiane and T. Mohamed, ``Feature selection algorithms in intrusion detection system: A survey,'' \emph{KSII Transactions on Internet and Information Systems}, vol. 12, no. 10, pp. 5079-5099, 2018.
 
     \bibitem{Chandrashekar2014}
-    G.~Chandrashekar and F.~Sahin, ``A survey on feature selection methods,'' \emph{Computers and Electrical Engineering}, vol. 40, pp. 16--28, 2014.
+    G. Chandrashekar and F. Sahin, ``A survey on feature selection methods,'' \emph{Computers and Electrical Engineering}, vol. 40, pp. 16--28, 2014.
 
     \bibitem{github-2015}
     GitHub triumphant over its ‘largest ever’ cyber pummeling. [Online]. Available: \\ https://fortune.com/2015/04/03/github-ddos-china/
@@ -752,7 +742,7 @@ In the future, we will continue researching the methods of real-time network dat
     WannaCry ransomware attack. [Online]. Available: \\ https://en.wikipedia.org/wiki/WannaCry\_ransomware\_attack
 
     \bibitem{cic2018}
-    I.~Sharafaldin, A. H.~Lashkari and A. A.~Ghorbani, ``Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization''\emph{Proceedings of International Conference on Information Systems Security and Privacy (ICISSP)}, pp. 108--116, 2018.
+    I. Sharafaldin, A. H. Lashkari and A. A. Ghorbani, ``Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization,'' in \emph{Proceedings of International Conference on Information Systems Security and Privacy (ICISSP)}, pp. 108--116, 2018.
 
     \bibitem{cicflowmeter}
     CICFlowMeter. [Online]. Available: \\ https://www.unb.ca/cic/research/applications.html\#CICFlowMeter
@@ -761,67 +751,67 @@ In the future, we will continue researching the methods of real-time network dat
     scikit-learn: machine learning in Python. [Online]. Available: \\ https://scikit-learn.org/
 
     \bibitem{Law2004}
-    M.H.C.~Law, M.A.T.~Figueiredo and A.K.~Jain, ``Simultaneous Feature Selection and Clustering Using Mixture Models,'' \emph{IEEE Transactions on Pattern Analysis and Machine Intelligence}, vol. 26, no. 9, pp. 1154--1166, 2004.
+    M.H.C. Law, M.A.T. Figueiredo and A.K. Jain, ``Simultaneous Feature Selection and Clustering Using Mixture Models,'' \emph{IEEE Transactions on Pattern Analysis and Machine Intelligence}, vol. 26, no. 9, pp. 1154--1166, 2004.
 
     \bibitem{Wu2017}
-    J.~Wu and C.~Li, ``Feature Selection Based on Features Unit,'' \emph{Proceedings of International Conference on Information Science and Control Engineering}, pp. 330--333, 2017.
+    J. Wu and C. Li, ``Feature Selection Based on Features Unit,'' in \emph{Proceedings of International Conference on Information Science and Control Engineering}, pp. 330--333, 2017.
 
     \bibitem{Shi2017}
-    H.~Shi, H.~Li, D.~Zhang, C.~Cheng and W.~Wu, ``Efficient and robust feature extraction and selection for traffic classification,'' \emph{Computer Networks}, vol. 119, pp. 1--16, 2017.
+    H. Shi, H. Li, D. Zhang, C. Cheng and W. Wu, ``Efficient and robust feature extraction and selection for traffic classification,'' \emph{Computer Networks}, vol. 119, pp. 1--16, 2017.
 
     \bibitem{Shi2018}
-    H.~Shi, H.~Li, D.~Zhang, C.~Cheng and X.~Cao, ``An efficient feature generation approach based on deep learning and feature selection techniques for traffic classification,'' \emph{Computer Networks}, vol. 132, pp. 81--98, 2018.
+    H. Shi, H. Li, D. Zhang, C. Cheng and X. Cao, ``An efficient feature generation approach based on deep learning and feature selection techniques for traffic classification,'' \emph{Computer Networks}, vol. 132, pp. 81--98, 2018.
 
     \bibitem{Dong2017}
-    Y.~Dong, J.~Zhao and J.~Jin, ``Novel feature selection and classification of Internet video traffic based on a hierarchical scheme,'' \emph{Computer Networks}, vol. 119, pp. 102--111, 2017.
+    Y. Dong, J. Zhao and J. Jin, ``Novel feature selection and  classification of Internet video traffic based on a hierarchical scheme,'' \emph{Computer Networks}, vol. 119, pp. 102--111, 2017.
 
     \bibitem{Ke2018}
-    W.~Ke, Y.~Wang, X.~Lei and B. Wei, ``Spark-Based Feature Selection Algorithm of Network Traffic Classification,'' \emph{Proceedings of International Conference on Computational Intelligence and Security}, pp. 140--144, 2017.
+    W. Ke, Y. Wang, X. Lei and B. Wei, ``Spark-Based Feature Selection Algorithm of Network Traffic Classification,'' in \emph{Proceedings of International Conference on Computational Intelligence and Security}, pp. 140--144, 2017.
 
     \bibitem{Taskin2017}
-    G.~Taskin, H.~Kaya and L.~Bruzzone, ``Feature Selection Based on High Dimensional Model Representation for Hyperspectral Images,'' \emph{IEEE Transactions on Image Processing}, vol. 26, no. 6, pp. 2918--2928, 2017.
+    G. Taskin, H. Kaya and L. Bruzzone, ``Feature Selection Based on High Dimensional Model Representation for Hyperspectral Images,'' \emph{IEEE Transactions on Image Processing}, vol. 26, no. 6, pp. 2918--2928, 2017.
 
     \bibitem{Valadi2019}
-    J.K.~Valadi, P.T.~Ovhal, and K.J.~Rathore, ``A Simple Method of Solution For Multi-label Feature Selection,'' \emph{Proceedings of IEEE International Conference on Electrical, Computer and Communication Technologies}, pp. 1--4, 2019.
+    J.K. Valadi, P.T. Ovhal, and K.J. Rathore, ``A Simple Method of Solution For Multi-label Feature Selection,'' in \emph{Proceedings of IEEE International Conference on Electrical, Computer and Communication Technologies}, pp. 1--4, 2019.
 
     \bibitem{Han2020}
-    X.~Han, P.~Liu,L.~Wang and D.~Li, ``Unsupervised feature selection via graph matrix learning and the low-dimensional space learning for classification,'' \emph{Engineering Applications of Artificial Intelligence}, to be published. DOI: 10.1016/j.engappai.2019.103283.
+    X. Han, P. Liu, L. Wang and D. Li, ``Unsupervised feature selection via graph matrix learning and the low-dimensional space learning for classification,'' \emph{Engineering Applications of Artificial Intelligence}, to be published. DOI: 10.1016/j.engappai.2019.103283.
 
     \bibitem{Yang2018}
-    X.~Yang, Q.~Wang and Y.~Wang, ``Feature selection based on network maximal correlation,'' \emph{Proceedings of International Symposium on Wireless Personal Multimedia Communications}, pp. 448--452, 2017.
+    X. Yang, Q. Wang and Y. Wang, ``Feature selection based on network maximal correlation,'' in \emph{Proceedings of International Symposium on Wireless Personal Multimedia Communications}, pp. 448--452, 2017.
 
     \bibitem{Yang2018a}
-    S.~Yang, F.~Nie and X.~Li, ``Unsupervised Feature Selection with Local Structure Learning,'' \emph{Proceedings of IEEE International Conference on Image Processing}, pp. 3398--3402, 2018.
+    S. Yang, F. Nie and X. Li, ``Unsupervised Feature Selection with Local Structure Learning,'' in \emph{Proceedings of IEEE International Conference on Image Processing}, pp. 3398--3402, 2018.
 
     \bibitem{Liu2018}
-    Z.~Liu, Y.~Li and W.~Ji, ``Differential Private Ensemble Feature Selection,'' \emph{Proceedings of International Joint Conference on Neural Networks}, pp. 1--6, 2018.
+    Z. Liu, Y. Li and W. Ji, ``Differential Private Ensemble Feature Selection,'' in \emph{Proceedings of International Joint Conference on Neural Networks}, pp. 1--6, 2018.
 
     \bibitem{Ferriyan2017}
-    A.~Ferriyan, A.H.~Thamrin, K.~Takeda and J.~Murai, ``Feature selection using genetic algorithm to improve classification in network intrusion detection system,'' \emph{Proceedings of International Electronics Symposium on Knowledge Creation and Intelligent Computing}, pp. 46--49, 2017.
+    A. Ferriyan, A.H. Thamrin, K. Takeda and J. Murai, ``Feature selection using genetic algorithm to improve classification in network intrusion detection system,'' in \emph{Proceedings of International Electronics Symposium on Knowledge Creation and Intelligent Computing}, pp. 46--49, 2017.
 
     \bibitem{Yassine2017}
-    A.~Yassine, C.~Mohamed and A.~Zinedine, ``Feature selection based on pairwise evalution,'' \emph{Proceedings of Intelligent Systems and Computer Vision}, pp. 1--6, 2017.
+    A. Yassine, C. Mohamed and A. Zinedine, ``Feature selection based on pairwise evalution,'' in \emph{Proceedings of Intelligent Systems and Computer Vision}, pp. 1--6, 2017.
 
     \bibitem{Wang2020CS}
-    M.~Wang, Y.Lu, and J.Qin, ``A Dynamic MLP-Based DDoS Attack Detection Method Using Feature Selection and Feedback,'' \emph{Computers \& Security}, to be published. DOI: 10.1016/j.cose.2019.101645.
+    M. Wang, Y. Lu, and J. Qin, ``A Dynamic MLP-Based DDoS Attack Detection Method Using Feature Selection and Feedback,'' \emph{Computers \& Security}, to be published. DOI: 10.1016/j.cose.2019.101645.
 
     \bibitem{Shannon1948}
-    C.E.~Shannon, ``A Mathematical Theory of Communication,'' \emph{Bell System Technical Journal}, vol. 27, no. 3, pp. 379--423, 1948.
+    C.E. Shannon, ``A Mathematical Theory of Communication,'' \emph{Bell System Technical Journal}, vol. 27, no. 3, pp. 379--423, 1948.
 
     \bibitem{quinlan2014c4}
-    J.R.~Quinlan, ``C4.5: programs for machine learning,'' Elsevier, 2014.
+    J.R. Quinlan, ``C4.5: programs for machine learning,'' Elsevier, 2014.
 
     \bibitem{PCA1987}
-    S.~Wold, K.~Esbensen and P.~Geladi, ``Principal component analysis,'' \emph{Chemometrics and Intelligent Laboratory Systems}, vol. 2, no. 1--3, pp. 37--52, 1987.
+    S. Wold, K. Esbensen and P. Geladi, ``Principal component analysis,'' \emph{Chemometrics and Intelligent Laboratory Systems}, vol. 2, no. 1--3, pp. 37--52, 1987.
 
     \bibitem{Alsharafi2020}
-    W.M.~Alsharafi, M.N.~Omar, N.A.~Al-Majmar and Y.~Fazea, ``Normal Profile Updating Method for Enhanced Packet Header Anomaly Detection,'' \emph{Emerging Trends in Intelligent Computing and Informatics}, pp. 734--737, 2019.
+    W.M. Alsharafi, M.N. Omar, N.A. Al-Majmar and Y. Fazea, ``Normal Profile Updating Method for Enhanced Packet Header Anomaly Detection,'' \emph{Emerging Trends in Intelligent Computing and Informatics}, pp. 734--737, 2019.
 
     \bibitem{MunaSulieman2017}
-    M.S.~Al-Hawawreh, ``SYN Flood Attack Detection in Cloud Environment Based on TCP/IP Header Statistical Features,'' \emph{Proceedings of International Conference on Information Technology}, pp. 236--243, 2017.
+    M.S. Al-Hawawreh, ``SYN Flood Attack Detection in Cloud Environment Based on TCP/IP Header Statistical Features,'' in \emph{Proceedings of International Conference on Information Technology}, pp. 236--243, 2017.
 
     \bibitem{Urmila2017}
-     T.S.~Urmila and R.~Balasubramanian, ``A novel framework for intrusion detection using distributed collaboration detection scheme in packet header data,'' \emph{International Journal of Computer Networks and Communications}, vol. 9, no. 4, pp. 97--112, 2017.
+    T.S. Urmila and R. Balasubramanian, ``A novel framework for intrusion detection using distributed collaboration detection scheme in packet header data,'' \emph{International Journal of Computer Networks and Communications}, vol. 9, no. 4, pp. 97--112, 2017.
 
 \end{thebibliography}
 
