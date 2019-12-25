@@ -34,11 +34,11 @@
 \history{Date of publication xxxx 00, 0000, date of current version xxxx 00, 0000.}
 \doi{10.1109/ACCESS.2017.DOI}
 
-\title{A Hierarchical Feature Selection Scheme for Network Anomaly Detection}
+\title{Efficient Network Anomaly Detection via Selective Features}
 \author{
     \uppercase{Jiewen Mao},
-    \uppercase{Yongquan Hu}, 
-    \uppercase{Dong Jiang}, 
+    \uppercase{Yongquan Hu},
+    \uppercase{Dong Jiang},
     \uppercase{Tongquan Wei},\IEEEmembership{Senior Member, IEEE}, \uppercase{Fuke Shen}}
 \address{School of Computer Science and Technology, East China Normal University, Shanghai 200062, China}
 
@@ -49,12 +49,20 @@
 \corresp{Corresponding author: Tongquan Wei (e-mail: tqwei@cs.ecnu.edu.cn).}
 
 \begin{abstract}
-    With the development of Internet applications and the widespread use of the Internet of Things, anomaly traffic is also affected by the amplification effect. 
-    Currently, anomaly detection of network traffic faces high dimentional of features. In order to select essential key features to identify anomaly traffic, in this paper we propose a hierarchical feature selection scheme. 
-    The proposed scheme selects the essential features of network traffic through feature clustering based on correlation coefficient and feature ranking based on information gain and gain ratio simultaneously, then it classifies network traffic by decision tree classifier. 
-    We analysis the effect of classification using selected features, and study the impact of different distance threshold. Experiments also show that the proposed scheme reduces the number of features, and shortens training time comparing with full feature set. 
-    By comparison with chi-square feature selection method, the proposed scheme improves the metrics including accuracy, precision, recall and F1-score.
+Network traffic anomaly detection has become a necessity due to proliferation of information technologies across safety critical applications. However, conventional traffic anomaly detection mechanisms primarily rely on data with very high dimension. In this paper, we propose an efficient network anomaly detection mechanism by selecting essential features that can quickly detect multiple types of anomalies without compromising the detection accuracy.
+The proposed scheme selects key features by clustering and ranking all variables, and classifies network traffic to detect anomalies based on selected features.
+
+Experimental results show that 
+
+ we propose a hierarchical feature selection scheme to reduce the dimension of data and select essential features of network traffic.
 \end{abstract}
+
+
+
+
+
+
+
 
 \begin{keywords}
     feature selection, abnormal detection, feature clustering, correlation coefficient, information gain, decistion tree
@@ -66,17 +74,17 @@
 
 \section{Introduction}
 \label{sec:introduction}
-\IEEEPARstart{W}{hile} the Internet of Things, 5G technology, the improvement of network bandwidth and new network security testing tools bring convenience to people, malicious traffic and network attacks are still serious threats to Internet users and servers. 
+\IEEEPARstart{W}{hile} the Internet of Things, 5G technology, the improvement of network bandwidth and new network security testing tools bring convenience to people, malicious traffic and network attacks are still serious threats to Internet users and servers.
 On March 2015, GitHub faced a massive DDoS attack. The attack lasted for one week and caused significant damages\cite{github-2015}. On October 2016, Dyn's DNS servers was attacked for two hours, during that time, internet users directed to Dyn servers were unable to reach some of the marquee brands of the internet\cite{dyn-2016}. On May 2017, the WannaCry ransomware attack bursted and over 200,000 compromised computers across 150 countries were influenced by this virus and economic losses from the cyber attack could reach up to 4 billion dollars\cite{wannacry-2017}.
 
 Traditional anomaly detection schemes often only use the header information of the network packets. Wang et.al. \cite{Wang2020CS} proposed a dynamic MLP-based attack detection method. The feature selection process of this paper uses backward selection filter method. It deletes the features which make the accuracy of MLP decreasing more than threshold and the remainings are the selected features. However the method in \cite{Wang2020CS} only uses the header information including source IP, TCP flag, source port, destination port, etc.. Urmila et al.\cite{Urmila2017} a Distributed collaboration detection scheme that combines the advantages of Anomaly and Signature based method by capturing the packet header in real time. AL-Hawawreh\cite{MunaSulieman2017} discussed the SYN flood attack in virtual cloud and detects it based on new features that extracted from TCP/IP header. Alsharafi et al.\cite{Alsharafi2020} investigates a Normal Profile Updating Method (NPUM) for enhancing the PHAD based IDS model, which updates normal profile of anomaly IDS using further processing of both the normal and abnormal data identified by anomaly detector.
 
 However, diverse types of network anomalies cannot be distinguish effectively only by packet header information. Even in some types of attacks the malicious users may construct and send the packets elaborately to escape the detection from intrusion detection systems(IDS). Once these packets pass the prevension and propagate in the network, the target computer or network device will be compromised.
-To solve this problem, this paper takes the statistical information extracted by aggregated flows besides the header information. Different types of anomalies have different statistical patterns. For example, (D)DoS attacks may have larger counts of packets but stable flow duration, while in brute-force attack the packet counts will be smaller but the curve of flow duration fluctuates drasticly. 
+To solve this problem, this paper takes the statistical information extracted by aggregated flows besides the header information. Different types of anomalies have different statistical patterns. For example, (D)DoS attacks may have larger counts of packets but stable flow duration, while in brute-force attack the packet counts will be smaller but the curve of flow duration fluctuates drasticly.
 
 Another problem of statistical detection methods are dimensional explosion. A flow may have more than 30 features in the header alone. Considering the statistical characteristics of all packets in flows, number of features in a network data set will grow rapidly. There may be linear relationships or other associations between these features. If we take all features into consideration, on one hand the efficient of learning and modeling algorithms will decrease, on the other hand it is hard to find the intrinsic cause that can determine whether a flow is an attack.
 
-This paper proposes a hierarchical feature selection scheme, including three steps of data preprocessing, feature clustering and feature ranking. First, we preprocess the network traffic data. This procedure includes removing features that are clearly not available for statistical analysis, filling or dropping missing data, and encoding labels to numerical values. Second, we propose a feature clustering algorithm based on Pearson correlation coefficient to cluster the features with strong correlation and then select the cluster center. The third step will continue the second step, a feature rank algorithm based on information gain and information gain ratio is used to further filter the features. Finally, we use the decision tree (DT) as a classifier and conduct experiments among our proposed method, the features selected by chi-square testing algorithm and the full feature set. We compare them by the training time and training metrics including accuracy, precision, recall and F1-score. 
+This paper proposes a hierarchical feature selection scheme, including three steps of data preprocessing, feature clustering and feature ranking. First, we preprocess the network traffic data. This procedure includes removing features that are clearly not available for statistical analysis, filling or dropping missing data, and encoding labels to numerical values. Second, we propose a feature clustering algorithm based on Pearson correlation coefficient to cluster the features with strong correlation and then select the cluster center. The third step will continue the second step, a feature rank algorithm based on information gain and information gain ratio is used to further filter the features. Finally, we use the decision tree (DT) as a classifier and conduct experiments among our proposed method, the features selected by chi-square testing algorithm and the full feature set. We compare them by the training time and training metrics including accuracy, precision, recall and F1-score.
 
 The contributions of our paper can be summarized as follow:
 
@@ -108,16 +116,16 @@ Moreover, there are different feature selection methods aim to process different
 %     \caption{The workflow of proposed feature selection scheme.}
 %     \label{fig:framework}
 % \end{figure*}
-\Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.8]{fig/Framework.pdf}{The workflow of proposed feature selection scheme.\label{fig:framework}}
+\Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.6]{fig/Framework.pdf}{The workflow of proposed feature selection scheme.\label{fig:framework}}
 
 \section{Problem Definition and Solution}
 \label{sec:problem}
 
-We denote 
+We denote
 $$D=\left(\begin{array}{llll}
     \bm{x}_1 & \bm{x}_2 & \ldots & \bm{x}_m
 \end{array}\right)^T$$
-as the data set with $m$ instances, where 
+as the data set with $m$ instances, where
 $$\bm{x}_i = \left(\begin{array}{lllll}
     f_{1i} & f_{2i} & \ldots & f_{ni} & c_i
 \end{array}\right)$$
@@ -140,8 +148,8 @@ In this section, we explain our design of proposed hierarchical feature selectio
 
 \subsection{Overview}
 
-The system framework of this paper is shown as Fig. \ref{fig:framework}. 
-The proposed method is the first block in the figure, and it contains three steps or layers: The first step is preprocessing, which cleans data set and makes it to a better form to be processed in next two steps. The second step is feature clustering, which puts all features with potential linear correlation into the same cluster, then all cluster centers are chosen as the representative of every clusters. The third step is feature ranking, which further rank all features selected in step 2 and choose the top $k$ features as the final feature set. 
+The system framework of this paper is shown as Fig. \ref{fig:framework}.
+The proposed method is the first block in the figure, and it contains three steps or layers: The first step is preprocessing, which cleans data set and makes it to a better form to be processed in next two steps. The second step is feature clustering, which puts all features with potential linear correlation into the same cluster, then all cluster centers are chosen as the representative of every clusters. The third step is feature ranking, which further rank all features selected in step 2 and choose the top $k$ features as the final feature set.
 
 After the three-steps processing, the refined data subset is divided into training set and test set, then they are trained and tested via decision tree classifier and our detection model is generated.
 
@@ -149,8 +157,8 @@ In following subsections the details and algorithms of proposed methods are desc
 
 \subsection{Preprocessing Dataset}
 
-The data set being studied is CIC-IDS-2018\cite{cic2018}. 
-It is generated on a simulated network topology on the AWS computing platform. The network topology is shown as Figure \ref{fig:topology}. It has 5 subnet and 1 attacker network.  
+The data set being studied is CIC-IDS-2018\cite{cic2018}.
+It is generated on a simulated network topology on the AWS computing platform. The network topology is shown as Figure \ref{fig:topology}. It has 5 subnet and 1 attacker network.
 The data set consists of seven different attack scenarios: Brute-force, Heartbleed, Botnet, DoS, DDoS, Web attacks, and infiltration of the network from inside. It includes the captured network traffic and system logs of each machine, along with 76 features extracted from the captured traffic using CICFlowMeter-V3\cite{cicflowmeter}. These 76 features are shown in Table \ref{tab:features}. Their detailed meaning is listed in \cite{cic2018}.
 
 % \begin{figure}[!htbp]
@@ -192,16 +200,16 @@ The data set consists of seven different attack scenarios: Brute-force, Heartble
     \end{tabular}
 \end{table*}
 
-In order to detect all types of attacks as much as possible, we integrated the network traffic data that was originally scattered in each day, and extracted 20\% of the data as our main data set while maintaining the label ratio. At the same time, in order to ensure the generalization ability of the model, we randomly select and generate data sets as many times as possible. Finally we get 10 stratified-sampled data set files. 
+In order to detect all types of attacks as much as possible, we integrated the network traffic data that was originally scattered in each day, and extracted 20\% of the data as our main data set while maintaining the label ratio. At the same time, in order to ensure the generalization ability of the model, we randomly select and generate data sets as many times as possible. Finally we get 10 stratified-sampled data set files.
 
 At this moment, the data set is still unavailable because there are some useless nominal features which are not suitable for statistical analyzing, and there may be missing values in the data set. We must remove these features to prevent them interfering proposed algorithms.
 
 Our preprocessing strategy is described as follows:
 
 \subsubsection{Data cleaning}
-The target of this paper is to find the decisive statistical features which can determine whether a network flow is an attack. 
-So the traditional 5-tuple, i.e. source IP address, source port, destination IP address, destination port and protocol cannot be used to our algorithm. 
-These nominal features will be removed to focus on other statistical features. 
+The target of this paper is to find the decisive statistical features which can determine whether a network flow is an attack.
+So the traditional 5-tuple, i.e. source IP address, source port, destination IP address, destination port and protocol cannot be used to our algorithm.
+These nominal features will be removed to focus on other statistical features.
 We also remove timestamp feature because our algorithm focuses on the type of attacks rather than the time characteristics.
 
 Many missing values also exist in the data set. There are many reasons for missing values. Some flows cannot be calculated in certain features. For example, if the duration time of a flow is too small even equals 0, the values of two features named ``Flow Bytes/s'' and ``Flow Packets/s'' can be NaN or infinity. It is a difficult work to examine every missing value, and they cannot be filled using interpolation because the data set is composed randomly. In this situation, we remove these rows containing missing values to ensure our algorithm running normally.
@@ -220,9 +228,9 @@ Most anomaly detection models perform as classifiers which predict output labels
 
 % Many features of the original data set are derived from others. According to our observation, there are linear correlations between many features. The most important step of our method is to merge these linear related features via clustering method. First the concept of correlation coefficient is reviewed.
 
-According to our observation, many features are potentially linear related. For example, in Figure \ref{fig:correlated-variables}, we pick up two pairs of features to show their potential linear correlation. The left part shows that features ``Flow IAT Mean'' and ``Forward IAT Mean'' may have positive correlation. In fact the interval time of a whole flow consists of the forward flow. In the right part, we can see that the feature ``Backward Segment Size Average'' is almost equals to ``Backward Packet Length Mean''. We can treat them as the same feature. 
+According to our observation, many features are potentially linear related. For example, in Figure \ref{fig:correlated-variables}, we pick up two pairs of features to show their potential linear correlation. The left part shows that features ``Flow IAT Mean'' and ``Forward IAT Mean'' may have positive correlation. In fact the interval time of a whole flow consists of the forward flow. In the right part, we can see that the feature ``Backward Segment Size Average'' is almost equals to ``Backward Packet Length Mean''. We can treat them as the same feature.
 
-The redundancy of features is produced by the featrue extraction tool. If we use the whole data set to train our model, the redundant features on one hand may increase the computation and spend more time, on the other hand these redundant features cannot import any new informations into our model. So it is necessary to merge these redundant features. In this paper, we use clustering method to reach this target. 
+The redundancy of features is produced by the featrue extraction tool. If we use the whole data set to train our model, the redundant features on one hand may increase the computation and spend more time, on the other hand these redundant features cannot import any new informations into our model. So it is necessary to merge these redundant features. In this paper, we use clustering method to reach this target.
 
 First the concept of correlation coefficient is reviewed.
 
@@ -298,7 +306,7 @@ The clustering algorithm is described as Algorithm \ref{alg:clustering} and Algo
     distance threshold $\delta$,
     currently existing clusters $C=\{c_1, c_2, \ldots, c_K\}$
 \ENSURE ~~\\
-    A integer $c_{join}$ which indicate the cluster which $f_i$ can join in.  
+    A integer $c_{join}$ which indicate the cluster which $f_i$ can join in.
 \STATE A vector including all maximum values of all existing cluster $\bm{d}_{\max}(C) \gets \emptyset$
 \FOR{$k=1,2,\ldots,K$}
     \STATE Distance vector for cluster $c_k$, i.e.$\bm{d}(c_k) \gets \emptyset$
@@ -330,7 +338,7 @@ After the clusters are generated, next step is to find the center of these clust
     Data set $D=(\bm{x}_1,\bm{x}_2,\ldots,\bm{x}_M)^\text{T}$, \\
     clusters $C=\{c_1, c_2, \ldots, c_K\}$ calculated in Algorithm \ref{alg:clustering}
 \ENSURE ~~\\
-    A feature list $F'=\{f'_1, f'_2, \ldots, f'_K\}$ whose features are the center of every cluster. 
+    A feature list $F'=\{f'_1, f'_2, \ldots, f'_K\}$ whose features are the center of every cluster.
 \STATE Feature list $f'=\emptyset$
 \FOR{$i=1,2,\ldots, K$}
     \IF{sizeof($c_i$) = 1}
@@ -352,24 +360,24 @@ After the clusters are generated, next step is to find the center of these clust
 
 \subsection{Layer 2: Feature Ranking Based on Information Gain}
 
-After the procedure of Layer 1, we generate a group of features which are pairwise independent. In order to further refine the feature space of our data, we choose those have better classification ability. The measure of feature classification ability is the information gain. 
+After the procedure of Layer 1, we generate a group of features which are pairwise independent. In order to further refine the feature space of our data, we choose those have better classification ability. The measure of feature classification ability is the information gain.
 
 We select the top $k$ best feature using information gain and information gain ratio simultaneously. The related definitions are listed as follows:
 
 \begin{defn}[Entropy of data set]
-    Entropy\cite{Shannon1948} is the measure of uncertainty of a random variable. In the context of our paper, the entropy of data set is defined as the entropy of labels. If the probability of label $L$ picking value $l_i$ equals to $P(L=l_i)=p_i$, the entropy of data set is denoted as 
+    Entropy\cite{Shannon1948} is the measure of uncertainty of a random variable. In the context of our paper, the entropy of data set is defined as the entropy of labels. If the probability of label $L$ picking value $l_i$ equals to $P(L=l_i)=p_i$, the entropy of data set is denoted as
 \begin{equation}
     H(D) = -\sum_{i=0}^N p_i \log_2 p_i
 \end{equation}
-Specially, if $p_i=0$ then we define $0\log0 = 0$. 
+Specially, if $p_i=0$ then we define $0\log0 = 0$.
 \end{defn}
 
 \begin{defn}[Conditional entropy of data set with given feature]
-The conditional entropy $H(D|f)$ is the uncertainty of data set $D$ under the condition of known feature $f$, which is denoted as 
+The conditional entropy $H(D|f)$ is the uncertainty of data set $D$ under the condition of known feature $f$, which is denoted as
 \begin{align}
      H(D|f)= & \notag \\
     & -\sum_{j} p(f=f_j) \times \notag \\
-    & \sum_{i} p(L=l_i|f=f_j) \log_2 p(L=l_i|f=f_j)   
+    & \sum_{i} p(L=l_i|f=f_j) \log_2 p(L=l_i|f=f_j)
 \end{align}
 where $p(f=f_j)$ is the probability when feature $f$ takes $f_j$, $p(L=l_i | f=f_j)$ is the conditional probability when label $L$ takes $l_i$ under the condition of $f=f_j$.
 \end{defn}
@@ -386,7 +394,7 @@ The information gain indicates the degree to which the uncertainty of the inform
 Obviously, for data set $D$ the information gain is determined by its features. Different features have different information gain. If a feature has greater information gain, it has stronger ability to classify the data.
 
 \begin{defn}[Information gain ratio]
-The problem of using information gain is that it tend to choose the feature which has larger value range. In order to eliminate this effect, the information gain ratio is introduced. It is defined as the information gain divided by entropy of the feature. 
+The problem of using information gain is that it tend to choose the feature which has larger value range. In order to eliminate this effect, the information gain ratio is introduced. It is defined as the information gain divided by entropy of the feature.
 \begin{equation}
     IGR(D, f) = \frac{IG(D, f)}{H(f)}
 \end{equation}
@@ -399,12 +407,12 @@ The problem of using information gain is that it tend to choose the feature whic
         \REQUIRE ~~\\
             Data set $D'$ with clustered features calculated in Algorithm \ref{alg:clustering} and Algorithm \ref{alg:find-cluster-center}
         \ENSURE ~~\\
-            A feature list $F''=\{f''_1, f''_2, \ldots, f''_k\}$ whose  features are top $k$ after ranked. 
+            A feature list $F''=\{f''_1, f''_2, \ldots, f''_k\}$ whose  features are top $k$ after ranked.
         \STATE Calculate the entropy $H(D')$ by its labels.
         \FOR{$i=1,2,\ldots, K$}
             \STATE Calculate the conditional entropy $H(D'|f_i)$.
             \STATE Calculate the information gain $$IG_{f_i} = H(D') - H(D'|f_i)$$
-            \STATE Calculate the information gain ratio 
+            \STATE Calculate the information gain ratio
             $$IGR_{f_i} = IG_{f_i}/H(f_i)$$
         \ENDFOR
         \STATE Calculate the average information gain $\bar{IG}=(\sum IG)/K$
@@ -418,7 +426,7 @@ Now our feature ranking algorithm is introduced in Algorithm \ref{alg:feature-ra
 
 \subsection{Summary of proposed algorithms}
 
-In this subsection, we summarize the proposed algorithm in a higher perspective. The complete algorithm is shown in Algorithm \ref{alg:complete-algorithm}. 
+In this subsection, we summarize the proposed algorithm in a higher perspective. The complete algorithm is shown in Algorithm \ref{alg:complete-algorithm}.
 Since we have selected all features we need to determine whether a flow is an attack. Furthermore we want to detect detailed attack types. We choose C4.5 decision tree\cite{quinlan2014c4} as our classification algorithm. C4.5 decision tree uses information gain ratio to classify data instances. The implementation of decision tree algorithms is beyond the scope of this article. However, our method in fact previously complete the feature selection process of decision tree, so the tree classifier can use our result and speed the training process.
 
 \begin{algorithm}
@@ -428,7 +436,7 @@ Since we have selected all features we need to determine whether a flow is an at
         \REQUIRE ~~\\
             Data set $D$ of 20\% randomly sampled, labels $L$, distance threshold $\delta$, number of features to be seleced $K$.
         \ENSURE ~~\\
-            A feature list $F''=\{f''_1, f''_2, \ldots, f''_K\}$ and decision tree model $M_T$. 
+            A feature list $F''=\{f''_1, f''_2, \ldots, f''_K\}$ and decision tree model $M_T$.
         \STATE Drop all rows with missing values in $D$.
         \STATE Drop all columns with zero-variance in $D$.
         \STATE Encode all labels in $L$ to numeric values.
@@ -444,7 +452,7 @@ Since we have selected all features we need to determine whether a flow is an at
 
 \subsection{Analysis of the Proposed Algorithm}
 
-Our method is one kind of feature selection algorithm. It is different from dimensionality reduction algorithms like PCA\cite{PCA1987}. PCA transforms the original data into a set of linearly independent representations of each dimension by linear transformation to extract the main linear components of the data, while feature selection methods do not transform the data. It just chooses the key features which can provide the most information about the data. The data transformed by PCA will lose their explanation of real meaning, while feature selection algorithms can keep the real meaning of every reserved features. Chandrashekar et.al. \cite{Chandrashekar2014} pointed out that feature selection methods must not be compared with dimension reduction methods. Therefore we cannot compare the proposed scheme with PCA by experiments. 
+Our method is one kind of feature selection algorithm. It is different from dimensionality reduction algorithms like PCA\cite{PCA1987}. PCA transforms the original data into a set of linearly independent representations of each dimension by linear transformation to extract the main linear components of the data, while feature selection methods do not transform the data. It just chooses the key features which can provide the most information about the data. The data transformed by PCA will lose their explanation of real meaning, while feature selection algorithms can keep the real meaning of every reserved features. Chandrashekar et.al. \cite{Chandrashekar2014} pointed out that feature selection methods must not be compared with dimension reduction methods. Therefore we cannot compare the proposed scheme with PCA by experiments.
 
 Meanwhile, our proposed method includes some characteristics of PCA. First, we calculate the covariance and correlation coefficient of all feature vectors, which is also used in calculation of PCA. Second, the features selected by our method are orthogonal and PCA do the same thing. Last but not least, every component generated by PCA have maximum variance, and our method contains the similar step. But in our method, the features with small variance are filtered.
 
@@ -455,14 +463,14 @@ In this section, the experiments and evaluation results are shown. First we desc
 
 \subsection{Experiment Setup}
 
-All experiments are running on a quad-core Intel PC with 2.90GHz CPU and 16 GB of memory. Our algorithms are implemented in Python 3.7 and the chi-square method is implemented in a Python library scikit-learn\cite{sklearn}. 
+All experiments are running on a quad-core Intel PC with 2.90GHz CPU and 16 GB of memory. Our algorithms are implemented in Python 3.7 and the chi-square method is implemented in a Python library scikit-learn\cite{sklearn}.
 
 The conducted experiments are about the following aspects:
 
 \begin{itemize}
-    \item The effect of different distance thresholds on the number of clusters. We compare the number of clusters in different threshold $\delta$, then explain how to choose best threshold to improve the classification metrics best. 
+    \item The effect of different distance thresholds on the number of clusters. We compare the number of clusters in different threshold $\delta$, then explain how to choose best threshold to improve the classification metrics best.
     \item The effect of different size feature spaces on classification results. We compare the training time and classification metrics of the features selected by this algorithm and all the features in the complete data set on the decision tree classifier respectively.
-    \item The effect of feature space of the same size but different elements on classification results. We compare the training time and classification index of the features selected by this algorithm and the features selected by the chi-square method on the decision tree classifier when the number of features is the same. 
+    \item The effect of feature space of the same size but different elements on classification results. We compare the training time and classification index of the features selected by this algorithm and the features selected by the chi-square method on the decision tree classifier when the number of features is the same.
 \end{itemize}
 
 The related classification metrics including accuracy(Acc), precision(Pre), recall(Rec) and F1-score($F_1$). Their definitions are listed as follows:
@@ -505,10 +513,10 @@ The related classification metrics including accuracy(Acc), precision(Pre), reca
 Table \ref{tab:selected-features} shows the features selected by our method and their descriptions. Notice that although we set $K=10$ for our feature ranking algorithm, the selected features are not same in all split data set. Because randomicity exists when we build the split data subset. Here we use the union of all selected feature subsets. From Table \ref{tab:selected-features} we make the following observations:
 
 \begin{itemize}
-	\item The sizes of packets are important. In the top 10 important features, there are 4 features about packet sizes. Considering the MTU of an IP network, a flow shouldn’t contain too large packets. If the flow meter observes a flow contain large packets, the probability that this stream is an attack stream will be high. 
-    \item Another type of important features is the count of packets. In benign flows, the number of packets often small because current network services intend to use short connection to complete the interaction with each other, in order to not occupy the bandwidth resources of the network. However, the attackers intend to send large amounts of packets to exhaust the connection resources and prevent connection from normal users. 
+	\item The sizes of packets are important. In the top 10 important features, there are 4 features about packet sizes. Considering the MTU of an IP network, a flow shouldn’t contain too large packets. If the flow meter observes a flow contain large packets, the probability that this stream is an attack stream will be high.
+    \item Another type of important features is the count of packets. In benign flows, the number of packets often small because current network services intend to use short connection to complete the interaction with each other, in order to not occupy the bandwidth resources of the network. However, the attackers intend to send large amounts of packets to exhaust the connection resources and prevent connection from normal users.
     \item Time-related features are also important. As we mentioned before, benign services intend to use short connection, while attackers may use long connection. A typical attack is to control the interval of any two flows which is a little shorter than the TCP waiting time. It prevents the TCP connection closing and finally exhaust the connection resources. In practise, time-related features should be considered with the count of packets together.
-\end{itemize} 
+\end{itemize}
 
 \begin{table}[!htpb]
     \caption{Selected Features and Their Description}
@@ -523,7 +531,7 @@ Table \ref{tab:selected-features} shows the features selected by our method and 
     Init Forward Win Byts   & \tabincell{l}{Number of bytes sent in initial  \\ window in the forward direction} \\
     Flow Packets/s         & \tabincell{l}{flow packets rate that is number of \\ packets transferred per second} \\
     ACK Flag Count        & Number of packets with ACK \\
-    Flow IAT Mean       & Average time between two flows \\ 
+    Flow IAT Mean       & Average time between two flows \\
     Backward IAT Max         & \tabincell{l}{Maximum time between two packets \\ sent in the backward direction} \\
     Idle Mean           & \tabincell{l}{Mean time a flow was idle before \\ becoming active}\\
     Forward Packet Length Min     & \tabincell{l}{Minimum size of packet in forward \\ direction} \\
@@ -568,8 +576,8 @@ In this subsection we compare the training time of decision tree classifier and 
 
 \subsubsection{Training Time}
 
-The training time in our method is the sum of running time of all algorithms mentioned before. The training time under different distance threshold $\delta$ is shown in Figure \ref{fig:training-time-with-full} and Table \ref{tab:training-time-all}. 
-When we use the full original data set to train a decision tree classifier and then prune the tree to 10 decision nodes too, the training time is near 300 seconds averagely. Using our method, the training time decreases near 100 seconds averagely.  
+The training time in our method is the sum of running time of all algorithms mentioned before. The training time under different distance threshold $\delta$ is shown in Figure \ref{fig:training-time-with-full} and Table \ref{tab:training-time-all}.
+When we use the full original data set to train a decision tree classifier and then prune the tree to 10 decision nodes too, the training time is near 300 seconds averagely. Using our method, the training time decreases near 100 seconds averagely.
 Meanwhile this figure shows that the average training time increases slowly with $\delta$ increasing.
 
 \begin{table}[!htbp]
@@ -602,7 +610,7 @@ Meanwhile this figure shows that the average training time increases slowly with
 
 \subsubsection{Metrics}
 
-The four metrics of our methods under different $\delta$ is shown in Figure , along with the metrics of the model trained on full original data set. The result is shown in Figure \ref{fig:metrics-full} and Table \ref{tab:metric-full}. The average accuracy of our method is 97.94\%, which is a little higher than the accuracy on full data set. The average precision, recall and F1-score are 79.46\%, 80.73\% and 79.33\% respectively. They are all higher than the results on full data set. 
+The four metrics of our methods under different $\delta$ is shown in Figure , along with the metrics of the model trained on full original data set. The result is shown in Figure \ref{fig:metrics-full} and Table \ref{tab:metric-full}. The average accuracy of our method is 97.94\%, which is a little higher than the accuracy on full data set. The average precision, recall and F1-score are 79.46\%, 80.73\% and 79.33\% respectively. They are all higher than the results on full data set.
 
 The result proved that the feature selected by our method can help improving performance of decision tree classifier comparing with using tree classifier directly on the full original data set.
 
@@ -639,8 +647,8 @@ The result proved that the feature selected by our method can help improving per
 
 In this experiment, we compare the training time and metrics of our method and Select-K-Best method using Chi-square funtion in the same size of feature set, in other words the number of features are both set to 10 in these two methods.
 
-The training time comparison is shown in Figure \ref{fig:training-time-with-chi2} and also listed in Table \ref{tab:training-time-all}. We can see our average training time is longer than the chi-square method performs. The chi-square method selects $n$ features with the highest values for the test chi-squared statistic from input data $X$. However, it only considers whether every single feature is correlated with the class label instead of considering the correlation between these features, which makes the training time lower than our methods. 
-As a result, the selected feature subset may contain features with inner relationship, which may bring the redundant information in the model. While our method can effectively eliminate the redundant information. 
+The training time comparison is shown in Figure \ref{fig:training-time-with-chi2} and also listed in Table \ref{tab:training-time-all}. We can see our average training time is longer than the chi-square method performs. The chi-square method selects $n$ features with the highest values for the test chi-squared statistic from input data $X$. However, it only considers whether every single feature is correlated with the class label instead of considering the correlation between these features, which makes the training time lower than our methods.
+As a result, the selected feature subset may contain features with inner relationship, which may bring the redundant information in the model. While our method can effectively eliminate the redundant information.
 
 \begin{figure}[!htpb]
     \centering
@@ -666,7 +674,7 @@ The classification metrics comparison is shown in Figure\ref{fig:metrics-chi2} a
 %     \label{tab:confusion-matrix}
 %     \begin{tabular}{c}
 %         \includegraphics[scale=0.45]{fig/confusion-matrix-p.pdf}
-%     \end{tabular}% 
+%     \end{tabular}%
 % \end{table*}
 
 \begin{table*}
@@ -702,24 +710,24 @@ The classification metrics comparison is shown in Figure\ref{fig:metrics-chi2} a
             \item[4] DOS attacks-LOIC-UDP
             \item[5] DOS attacks-LOIC-HTTP
             \item[6] DOS attacks-SlowHTTPTest
-            \item[7] DOS attacks-Hulk 
+            \item[7] DOS attacks-Hulk
             \item[8] DOS attacks-Slowloris
             \item[9] SSH-BruteForce
             \item[10] DOS attacks-GoldenEye
             \item[11] SQL Injection
-            \item[12] FTP-BruteForce          
+            \item[12] FTP-BruteForce
         \end{tablenotes}
     \end{threeparttable}
 \end{table*}
 
 \subsection{Confusion Matrix}
 
-Finally we analyze the confusion matrix of our method. The confusion matrix is shown in Tabel \ref{tab:confusion-matrix}. We add the confusion matirx of all split data set. The matrix shows that our method can mainly classify the data into correct class label. However, there are still many false positive and false negative instances. The most severe miss happens on the label ``DOS attacks-GoldenEye'' and ``Infilteration''. The flow patterns of these two situation performs similar with benign flow pattern so that our method could not discriminate them properly. The flow patterns of these two situation should be further study and new method should be proposed to detect them.  
+Finally we analyze the confusion matrix of our method. The confusion matrix is shown in Tabel \ref{tab:confusion-matrix}. We add the confusion matirx of all split data set. The matrix shows that our method can mainly classify the data into correct class label. However, there are still many false positive and false negative instances. The most severe miss happens on the label ``DOS attacks-GoldenEye'' and ``Infilteration''. The flow patterns of these two situation performs similar with benign flow pattern so that our method could not discriminate them properly. The flow patterns of these two situation should be further study and new method should be proposed to detect them.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-This paper proposed a novel hierarchical feature selection method for network anomaly detection. We applied feature clustering algorithm using correlation-coefficient-based distance between features on network flow traffic data set, then ranked these feature cluster centers using information gain and information gain ratio simultaneously. After that we chose decision tree as our training algorithm to train the model based on the selected feature set. The experiment results shows our method can select more critical features which can determine whether a network flow is an attack. 
+This paper proposed a novel hierarchical feature selection method for network anomaly detection. We applied feature clustering algorithm using correlation-coefficient-based distance between features on network flow traffic data set, then ranked these feature cluster centers using information gain and information gain ratio simultaneously. After that we chose decision tree as our training algorithm to train the model based on the selected feature set. The experiment results shows our method can select more critical features which can determine whether a network flow is an attack.
 
 In the future, we will continue researching the methods of real-time network data analysis and real-time model of training and detection for network traffic.
 
