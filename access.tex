@@ -1,10 +1,6 @@
 \documentclass{ieeeaccess}
-% \usepackage{siunitx}
-% \usepackage[utf8]{inputenc}
-% \usepackage[swedish]{babel}
-% \usepackage{lmodern}
+\usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-% \usepackage[babel=true]{microtype}
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{amsthm}
@@ -29,6 +25,9 @@
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+% This command is used to modify the paper. After the paper is definive. Please comment or delete this command.
+\newcommand{\change}[2]{\textcolor{red}{#1}\textcolor{blue}{#2}}
 
 \begin{document}
 \history{Date of publication xxxx 00, 0000, date of current version xxxx 00, 0000.}
@@ -67,17 +66,17 @@
 
 \section{Introduction}
 \label{sec:introduction}
-\IEEEPARstart{W}{hile} the Internet of Things, 5G technology, the improvement of network bandwidth and new network security testing tools bring convenience to people, malicious traffic and network attacks are still serious threats to Internet users and servers.
+\change{While the Internet of Things, 5G technology, the improvement of network bandwidth and new network security testing tools bring convenience to people, malicious traffic and network attacks are still serious threats to Internet users and servers.}{Network traffic anomaly detection has become a necessity due to proliferation of information technologies across safety critical applications. In recent years, network attacks aiming at public information services appears more frequently and their consequences become more severe.}
 On March 2015, GitHub faced a massive DDoS attack. The attack lasted for one week and caused significant damages\cite{github-2015}. On October 2016, Dyn's DNS servers was attacked for two hours, during that time, internet users directed to Dyn servers were unable to reach some of the marquee brands of the internet\cite{dyn-2016}. On May 2017, the WannaCry ransomware attack bursted and over 200,000 compromised computers across 150 countries were influenced by this virus and economic losses from the cyber attack could reach up to 4 billion dollars\cite{wannacry-2017}.
 
-Traditional anomaly detection schemes often only use the header information of the network packets. Wang et.al. \cite{Wang2020CS} proposed a dynamic MLP-based attack detection method. The feature selection process of this paper uses backward selection filter method. It deletes the features which make the accuracy of MLP decreasing more than threshold and the remainings are the selected features. However the method in \cite{Wang2020CS} only uses the header information including source IP, TCP flag, source port, destination port, etc.. Urmila et al.\cite{Urmila2017} a Distributed collaboration detection scheme that combines the advantages of Anomaly and Signature based method by capturing the packet header in real time. AL-Hawawreh\cite{MunaSulieman2017} discussed the SYN flood attack in virtual cloud and detects it based on new features that extracted from TCP/IP header. Alsharafi et al.\cite{Alsharafi2020} investigates a Normal Profile Updating Method (NPUM) for enhancing the PHAD based IDS model, which updates normal profile of anomaly IDS using further processing of both the normal and abnormal data identified by anomaly detector.
+\change{Traditional}{Conventional} anomaly detection schemes often only use the header information of the network packets. Wang et.al. \cite{Wang2020CS} proposed a dynamic MLP-based attack detection method. The feature selection process of this paper uses backward selection filter method. It deletes the features which make the accuracy of MLP decreasing more than threshold and the remainings are the selected features. However the method in \cite{Wang2020CS} only uses the header information including source IP, TCP flag, source port, destination port, etc.. Urmila et al.\cite{Urmila2017} a Distributed collaboration detection scheme that combines the advantages of Anomaly and Signature based method by capturing the packet header in real time. AL-Hawawreh\cite{MunaSulieman2017} discussed the SYN flood attack in virtual cloud and detects it based on new features that extracted from TCP/IP header. Alsharafi et al.\cite{Alsharafi2020} investigates a Normal Profile Updating Method (NPUM) for enhancing the PHAD based IDS model, which updates normal profile of anomaly IDS using further processing of both the normal and abnormal data identified by anomaly detector.
 
 However, diverse types of network anomalies cannot be distinguish effectively only by packet header information. Even in some types of attacks the malicious users may construct and send the packets elaborately to escape the detection from intrusion detection systems(IDS). Once these packets pass the prevension and propagate in the network, the target computer or network device will be compromised.
-To solve this problem, this paper takes the statistical information extracted by aggregated flows besides the header information. Different types of anomalies have different statistical patterns. For example, (D)DoS attacks may have larger counts of packets but stable flow duration, while in brute-force attack the packet counts will be smaller but the curve of flow duration fluctuates drasticly.
+To solve this problem, \change{this paper}{many other works} takes \change{the}{more} statistical information extracted by aggregated flows besides the header information. Different types of anomalies have different statistical patterns. For example, (D)DoS attacks may have larger counts of packets but stable flow duration, while in brute-force attack the packet counts will be smaller but the curve of flow duration fluctuates drasticly. \change{}{Using more features, the detection systems can distinguish more types of attacks and the accuracy improves higher.}
 
-Another problem of statistical detection methods are dimensional explosion. A flow may have more than 30 features in the header alone. Considering the statistical characteristics of all packets in flows, number of features in a network data set will grow rapidly. There may be linear relationships or other associations between these features. If we take all features into consideration, on one hand the efficient of learning and modeling algorithms will decrease, on the other hand it is hard to find the intrinsic cause that can determine whether a flow is an attack.
+\change{Another problem of statistical detection methods are dimensional explosion. }{However, the cost of high accuracy is lower efficiency. It may bring the problem of dimensional explosion.} A flow may have more than 30 features in the header alone. Considering the statistical characteristics of all packets in flows, number of features in a network data set will grow rapidly. \change{There may be linear relationships or other associations between these features.}{These features may exists correlations or derivations.} If we take all features into consideration, on one hand the efficient of learning and modeling algorithms will decrease, on the other hand it is hard to find the intrinsic cause that can determine whether a flow is an attack.
 
-This paper proposes a hierarchical feature selection scheme, including three steps of data preprocessing, feature clustering and feature ranking. First, we preprocess the network traffic data. This procedure includes removing features that are clearly not available for statistical analysis, filling or dropping missing data, and encoding labels to numerical values. Second, we propose a feature clustering algorithm based on Pearson correlation coefficient to cluster the features with strong correlation and then select the cluster center. The third step will continue the second step, a feature rank algorithm based on information gain and information gain ratio is used to further filter the features. Finally, we use the decision tree (DT) as a classifier and conduct experiments among our proposed method, the features selected by chi-square testing algorithm and the full feature set. We compare them by the training time and training metrics including accuracy, precision, recall and F1-score.
+\change{This paper proposes a hierarchical feature selection scheme, including three steps of data preprocessing, feature clustering and feature ranking. First, we preprocess the network traffic data. This procedure includes removing features that are clearly not available for statistical analysis, filling or dropping missing data, and encoding labels to numerical values. Second, we propose a feature clustering algorithm based on Pearson correlation coefficient to cluster the features with strong correlation and then select the cluster center. The third step will continue the second step, a feature rank algorithm based on information gain and information gain ratio is used to further filter the features. Finally, we use the decision tree (DT) as a classifier and conduct experiments among our proposed method, the features selected by chi-square testing algorithm and the full feature set. We compare them by the training time and training metrics including accuracy, precision, recall and F1-score.}{In this paper, we propose an efficient network anomaly detection scheme with a novel feature selection procedure. We select essential key features using proposed feature clustering algorithm based on Pearson correlation coefficient and feature ranking algorithm based on information gain. Then, we train the anomaly detection model by decision tree using the features selected by the proposed algorithms. Finally we compare our model to the similar model trained by full data set and features selected by chi-square function.} 
 
 The contributions of our paper can be summarized as follow:
 
@@ -88,10 +87,12 @@ The contributions of our paper can be summarized as follow:
     \item This paper uses decision tree as classifier to compare selected feature subset using proposed method, chi-square selection method, and the complete feature set on the aspect of training time, accuracy, precision, recall and F1-score.
 \end{enumerate}
 
-The remaining part of the paper is organized as follows: Section \ref{sec:related} describes related works. Section \ref{sec:problem} describe the formalization of feature selection problem. Section \ref{sec:methods} introduces our hierarchical feature selection method. Section \ref{sec:evaluation} shows the experiment results and the discussion about the results. Finally Section \ref{sec:conclusion} concludes this paper and indicates future works.
+The remaining part of the paper is organized as follows: Section \ref{sec:related} describes related works. Section \ref{sec:problem} describe the formalization of feature selection problem. Section \ref{sec:methods} introduces \change{our feature selection method}{and analyzes the proposed detection scheme.} Section \ref{sec:evaluation} shows the experiment results and the discussion about the results. Finally Section \ref{sec:conclusion} concludes this paper and indicates future works.
 
 \section{Related Works}
 \label{sec:related}
+
+\Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.6]{fig/Framework.pdf}{The workflow of proposed feature selection scheme.\label{fig:framework}}
 
 Different approaches have been proposed to apply to feature selection to improve the performance of feature selection. H. C. Law et al. propose an expectation-maximization (EM) algorithm to estimate the importance of different features and the best number of components for Gaussian-mixture clustering\cite{Law2004}. EM can avoid running EM many times with different numbers of components and different feature subsets, and can achieve better performance than using all the available features for clustering. Yang et al.\cite{Yang2018} present a modified Network Maximal Correlation (NMC) model as a measure to capture correlation relationships between a characteristic variable and a label variable. The results show the method can obtain an optimal subset of features with faster speed, maximum correlation and minimal redundancy through numerical simulation.
 
@@ -102,14 +103,6 @@ Liu et al. \cite{Liu2018} propose a differentially private ensemble feature sele
 Feature selection also have been broadly used in processing traffic data. Shi et al. \cite{Shi2017} propose a novel feature extraction and selection approach to provide the optimal and robust features for traffic classification, which based on multifractal features, the observation of the multifractal features and the analysis of PCABFS. The results show the approach achieves better classification performance, lower runtime performance and more effective for real-time traffic classification compared to the TLS features. Moreover, the authors then propose a new feature optimization approach based on deep learning and Feature Selection (FS) techniques\cite{Shi2018} to provide the optimal and robust features for traffic data sets. The results show the approach achieves the best classification performance and relatively higher runtime performance compared with the approaches used in the previous work.
 
 Moreover, there are different feature selection methods aim to process different kinds of data. Dong et al.\cite{Dong2017} propose a fine grained classification scheme which based on a hierarchical kNN classifier for network video traffic. The results show that the proposed method outperforms existing methods applying commonly used flow statistical features. Taskin et al. \cite{Taskin2017} presented a novel feature-selection method based on High Dimensional Model Representation (HDMR) to analyze and test in classification of hyperspectral images. The results show that the proposed approach can be used as a fast and efficient feature-selection method yielding very competitive results compared to the state-of-art feature-selection methods. Valadi et al.\cite{Valadi2019} propose a new modification of attribute selection with multiple label which can be advantageously used for handling high dimensional multi-level datasets. The results show the proposed approach reduces complexity and computational run time.
-
-% \begin{figure*}[!htbp]
-%     \centering
-%     \includegraphics[scale=0.8]{fig/Framework.pdf}
-%     \caption{The workflow of proposed feature selection scheme.}
-%     \label{fig:framework}
-% \end{figure*}
-\Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.6]{fig/Framework.pdf}{The workflow of proposed feature selection scheme.\label{fig:framework}}
 
 \section{Problem Definition and Solution}
 \label{sec:problem}
@@ -141,10 +134,10 @@ In this section, we explain our design of proposed hierarchical feature selectio
 
 \subsection{Overview}
 
-The system framework of this paper is shown as Fig. \ref{fig:framework}.
-The proposed method is the first block in the figure, and it contains three steps or layers: The first step is preprocessing, which cleans data set and makes it to a better form to be processed in next two steps. The second step is feature clustering, which puts all features with potential linear correlation into the same cluster, then all cluster centers are chosen as the representative of every clusters. The third step is feature ranking, which further rank all features selected in step 2 and choose the top $k$ features as the final feature set.
+The \change{system framework of this paper }{workflow of proposed anomaly detection scheme} is shown in Figure \ref{fig:framework}.
+\change{The proposed method is the first block in the figure, and it contains three steps or layers: The first step is preprocessing, which cleans data set and makes it to a better form to be processed in next two steps. The second step is feature clustering, which puts all features with potential linear correlation into the same cluster, then all cluster centers are chosen as the representative of every clusters. The third step is feature ranking, which further rank all features selected in step 2 and choose the top $k$ features as the final feature set.}{The first and the most important part is the feature selection procedure. It contains three parts: At first we prepocess the data set. Then all correlated features are aggregated by proposed feature clustering algorithm. Next, all cluster center features are ranked and sorted by proposed feature ranking algorithm.}
 
-After the three-steps processing, the refined data subset is divided into training set and test set, then they are trained and tested via decision tree classifier and our detection model is generated. In following subsections the details and algorithms of proposed methods are described.
+After the three-steps processing, the refined data subset is divided into training set and test set, then they are trained and tested via decision tree classifier and \change{}{finally} our detection model is generated. \change{In following subsections the details and algorithms of proposed methods are described.}{}
 
 \subsection{Preprocessing Dataset}
 
@@ -152,12 +145,6 @@ The data set being studied is CIC-IDS-2018\cite{cic2018}.
 It is generated on a simulated network topology on the AWS computing platform. The network topology is shown as Figure \ref{fig:topology}. It has 5 subnet and 1 attacker network.
 The data set consists of seven different attack scenarios: Brute-force, Heartbleed, Botnet, DoS, DDoS, Web attacks, and infiltration of the network from inside. It includes the captured network traffic and system logs of each machine, along with 76 features extracted from the captured traffic using CICFlowMeter-V3\cite{cicflowmeter}. These 76 features are shown in Table \ref{tab:features}. Their detailed meaning is listed in \cite{cic2018}.
 
-% \begin{figure}[!htbp]
-%     \centering
-%     \includegraphics[scale=0.5]{fig/Topology.pdf}
-%     \caption{Simulated network topology on AWS computing platform}
-%     \label{fig:topology}
-% \end{figure}
 \Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.45]{fig/Topology.pdf}{Simulated network topology on AWS computing platform\label{fig:topology}}
 
 \begin{table*}[!htpb]
@@ -196,9 +183,9 @@ In order to detect all types of attacks as much as possible, we integrated the n
 At this moment, the data set is still unavailable because there are some useless nominal features which are not suitable for statistical analyzing, and there may be missing values in the data set. We must remove these features to prevent them interfering proposed algorithms. Our preprocessing strategy is described as follows:
 
 \subsubsection{Data cleaning}
-The target of this paper is to find the decisive statistical features which can determine whether a network flow is an attack.
+The target of \change{this paper}{feature selection procedure} is to find the decisive statistical features which can \change{determine whether a network flow is an attack.}{precisely distinguish different attack typs.}
 So the traditional 5-tuple, i.e. source IP address, source port, destination IP address, destination port and protocol cannot be used to our algorithm.
-These nominal features will be removed to focus on other statistical features.
+These nominal features will be removed \change{to}{so that we can} focus on other statistical features.
 We also remove timestamp feature because our algorithm focuses on the type of attacks rather than the time characteristics.
 
 Many missing values also exist in the data set. There are many reasons for missing values. Some flows cannot be calculated in certain features. For example, if the duration time of a flow is too small even equals 0, the values of two features named ``Flow Bytes/s'' and ``Flow Packets/s'' can be NaN or infinity. It is a difficult work to examine every missing value, and they cannot be filled using interpolation because the data set is composed randomly. In this situation, we remove these rows containing missing values to ensure our algorithm running normally.
@@ -213,7 +200,7 @@ Variance is a physical quantity used to describe the degree of discreteness of a
 
 Most anomaly detection models perform as classifiers which predict output labels by calculating the probabilities of every label in the label set. The models use input data to train a function. Both input data and output data are often numeric. However in our data set, the labels are text which cannot be processed by detection model. Thus we encoder the labels and map them to numeric values.
 
-\subsection{Layer 1: Feature Clustering Based on Pearson Correlation Coefficient}
+\subsection{Feature Clustering Based on Pearson Correlation Coefficient}
 
 According to our observation, many features are potentially linear related. For example, in Figure \ref{fig:correlated-variables}, we pick up two pairs of features to show their potential linear correlation. The left part shows that features ``Flow IAT Mean'' and ``Forward IAT Mean'' may have positive correlation. In fact the interval time of a whole flow consists of the forward flow. In the right part, we can see that the feature ``Backward Segment Size Average'' is almost equals to ``Backward Packet Length Mean''. We can treat them as the same feature.
 
@@ -346,9 +333,9 @@ After the clusters are generated, next step is to find the center of these clust
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Layer 2: Feature Ranking Based on Information Gain}
+\subsection{Feature Ranking Based on Information Gain and Gain Ratio Simultaneously}
 
-After the procedure of Layer 1, we generate a group of features which are pairwise independent. In order to further refine the feature space of our data, we choose those have better classification ability. The measure of feature classification ability is the information gain.
+After the procedure of \change{Layer 1}{feature clustering}, we generate a group of features which are pairwise independent. In order to further refine the feature space of our data, we choose those have better classification ability. The measure of feature classification ability is the information gain.
 
 We select the top $k$ best feature using information gain and information gain ratio simultaneously. The related definitions are listed as follows:
 
@@ -715,7 +702,7 @@ Finally we analyze the confusion matrix of our method. The confusion matrix is s
 \section{Conclusion}
 \label{sec:conclusion}
 
-Dimension disaster of network traffic data severely decrease the efficiency and accuracy of network anomaly detection mechanisms. In this paper we propose a novel efficient feature-selection-based network anomaly detection scheme. 
+\change{}{Conventional network anomaly detection methods take a large amount of features of network traffic into account. However} dimension disaster of network traffic data severely decrease the efficiency and accuracy of network anomaly detection mechanisms. In this paper we propose a novel efficient network anomaly detection scheme via selective features. 
 Essential key features of network traffic are selected by feature clustering and feature ranking algorithms orderly, then C4.5 decision tree classifier is used to classify the refined data subset. 
 The experimental results show that our scheme can select more critical features which makes training time decreasing when training the decision tree classifier, and all classification metrics increases. 
 
@@ -735,7 +722,7 @@ In the future, we will continue researching the methods of real-time network dat
     WannaCry ransomware attack. [Online]. Available: \\ https://en.wikipedia.org/wiki/WannaCry\_ransomware\_attack
 
     \bibitem{Wang2020CS}
-    M. Wang, Y. Lu, and J. Qin, ``A Dynamic MLP-Based DDoS Attack Detection Method Using Feature Selection and Feedback,'' \emph{Computers \& Security}, to be published. DOI: 10.1016/j.cose.2019.101645.
+    M. ~Wang, Y. ~Lu, and J. ~Qin, ``A Dynamic MLP-Based DDoS Attack Detection Method Using Feature Selection and Feedback,'' \emph{Computers \& Security}, to be published. DOI: 10.1016/j.cose.2019.101645.
 
     \bibitem{Urmila2017}
     T.S. Urmila and R. Balasubramanian, ``A novel framework for intrusion detection using distributed collaboration detection scheme in packet header data,'' \emph{International Journal of Computer Networks and Communications}, vol. 9, no. 4, pp. 97--112, 2017.
