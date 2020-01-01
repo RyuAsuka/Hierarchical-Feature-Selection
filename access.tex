@@ -53,7 +53,7 @@
     In this paper, we propose an efficient network anomaly detection mechanism by selecting essential features that can quickly detect multiple types of anomalies without compromising the detection accuracy.
     The proposed scheme selects key features by clustering and ranking all variables, and classifies network traffic to detect anomalies based on selected features.
     Experimental results show that on CIC-IDS-2018 data set, the proposed scheme can decrease the training time from about 300 seconds to about 200 seconds. Besides, the proposed scheme can increase 1\% of accuracy, 1\% of precision, 2\% of recall and 1\% of F1-score, as comparing to training the classifier with full data set. 
-    Under the condition of same number of selected features, although the training time of the proposed method is 100 second longer, it can also increase 3\% of accuracy, 12\% of precision, 10\% of recall and 8\% of F1-score, as comparing to Seleck-K-Best method with chi-square method.
+    Under the condition of same scale of selected features, although the training time of the proposed method is 100 second longer, it can also increase 3\% of accuracy, 12\% of precision, 10\% of recall and 8\% of F1-score, as comparing to Seleck-K-Best method with chi-square method.
 \end{abstract}
 
 \begin{keywords}
@@ -92,16 +92,15 @@ The remaining part of the paper is organized as follows: Section \ref{sec:relate
 
 \Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.6]{fig/Framework.pdf}{The workflow of proposed feature selection scheme.\label{fig:framework}}
 
-% TODO: Check the grammar of related works.
 Different approaches have been proposed to apply to feature selection to improve the performance of feature selection. Expectation-Maximization (EM)\cite{Law2004} algorithm estimates the importance of different features and the best number of components for Gaussian-mixture clustering. EM can avoid running EM many times with different numbers of components and different feature subsets, and can achieve better performance than using all the available features for clustering. A modified Network Maximal Correlation (NMC) model\cite{Yang2018} captures correlation relationships between a characteristic variable and a label variable. The results show the method can obtain an optimal subset of features with faster speed, maximum correlation and minimal redundancy through numerical simulation.
 
 In addition, various of new feature selection approaches have been presented in the past years. A new feature selection algorithm based on features unit (FU) is proposed in \cite{Wu2017}, which uses entropy of information to obtain features units and sort them to selected the appropriate one. The results in the UCI datasets show that the FU performs better than MIFS-U and mRMR on the whole. Yassine et al.\cite{Yassine2017} proposed a new hybrid filter-wrapper algorithm of feature selection based on pairwise feature selection, which benefits from the speed up and the ease of use of filters and the good performance of wrappers. The results indicate that the selected subset of features by the proposed approach has a good classification performance. In \cite{Yang2018a}, a novel unsupervised feature selection method is used where constructing similarity matrix and performing feature selection are together incorporated into a coherent model. The results show the proposed approach has better performance to solve the objective function and extensive experiments on face images and benchmark datasets. Ke et al.\cite{Ke2018} proposed a redundant window-based optimal feature subset discover algorithm for feature selection, which use the growth algorithm to discover the relevant features and use the shrink algorithm to eliminate the redundant ones. The results show that the method has a good performance in terms of accuracy and scalability, and improves the execution efficiency of feature selection and traffic classification.
 
-Liu et al.\cite{Liu2018} proposed a differentially private ensemble feature selection algorithm based on output perturbation. The results also demonstrate the high performance under certain privacy preservation degree of the method. Ferriyan et al.\cite{Ferriyan2017} proposed a new feature selections using Genetic Algorithm to find the optimal features from NSL-KDD Cup 99 dataset, which use one-point crossover for the Genetic Algorithm parameters instead of two-point crossover. The results show the proposed approach performs better in classification rate and the training time compared to several other classifiers. Han et al.\cite{Han2020} proposed a novel unsupervised feature selection method via the graph matrix learning and the low-dimensional space learning to obtain their individually optimized result. The results on real datasets verified that the method achieved the best classification performance compared to the state-of-the-art feature selection methods.
+Liu et al.\cite{Liu2018} proposed a differentially private ensemble feature selection algorithm based on output perturbation. The results also demonstrate the high performance under certain privacy preservation degree of the method. Genetic-Algorithm-based feature selection \cite{Ferriyan2017} finds the optimal features from NSL-KDD data set, which use one-point crossover for the Genetic Algorithm parameters instead of two-point crossover. The results show the proposed approach performs better in classification rate and the training time compared to several other classifiers. In \cite{Han2020}, a novel unsupervised feature selection method was proposed. It leverages the graph matrix learning and the low-dimensional space learning to obtain their individually optimized result. The results on real datasets verified that the method achieved the best classification performance compared to the state-of-the-art feature selection methods.
 
-Feature selection also have been broadly used in processing traffic data. Shi et al.\cite{Shi2017} proposed a novel feature extraction and selection approach to provide the optimal and robust features for traffic classification, which based on multifractal features, the observation of the multifractal features and the analysis of PCABFS. The results show the approach achieves better classification performance, lower runtime performance and more effective for real-time traffic classification compared to the TLS features. Moreover, the authors then propose a new feature optimization approach based on deep learning and Feature Selection (FS) techniques\cite{Shi2018} to provide the optimal and robust features for traffic data sets. The results show the approach achieves the best classification performance and relatively higher runtime performance compared with the approaches used in the previous work.
+Feature selection also have been broadly used in processing traffic data. Shi et al.\cite{Shi2017} proposed a novel feature extraction and selection approach to provide the optimal and robust features for traffic classification, which based on multifractal features, the observation of the multifractal features and the analysis of PCA-based feature selection. The results show the approach achieves better classification performance, lower runtime performance and more effective for real-time traffic classification compared to the TLS features. Moreover, the authors then propose a new feature optimization approach based on deep learning and Feature Selection (FS) techniques\cite{Shi2018} to provide the optimal and robust features for traffic data sets. The results show the approach achieves the best classification performance and relatively higher runtime performance compared with the approaches used in the previous work.
 
-Moreover, there are different feature selection methods aim to process different kinds of data. Dong et al.\cite{Dong2017} proposed a fine grained classification scheme which based on a hierarchical kNN classifier for network video traffic. The results show that the proposed method outperforms existing methods applying commonly used flow statistical features. Taskin et al.\cite{Taskin2017} presented a novel feature-selection method based on High Dimensional Model Representation (HDMR) to analyze and test in classification of hyperspectral images. The results show that the proposed approach can be used as a fast and efficient feature-selection method yielding very competitive results compared to the state-of-art feature-selection methods. Valadi et al.\cite{Valadi2019} proposed a new modification of attribute selection with multiple label which can be advantageously used for handling high dimensional multi-level datasets. The results show the proposed approach reduces complexity and computational run time.
+Besides, there are different feature selection methods aim to process different kinds of data. Dong et al.\cite{Dong2017} proposed a fine grained classification scheme which based on a hierarchical kNN classifier for network video traffic. The results show that the proposed method outperforms existing methods applying commonly used flow statistical features. Taskin et al.\cite{Taskin2017} presented a novel feature-selection method based on High Dimensional Model Representation (HDMR) to analyze and test in classification of hyperspectral images. The results show that the proposed approach can be used as a fast and efficient feature-selection method yielding very competitive results compared to the state-of-art feature-selection methods. Valadi et al.\cite{Valadi2019} proposed a new modification of attribute selection with multiple label which can be advantageously used for handling high dimensional multi-level datasets. The results show the proposed approach reduces complexity and computational run time.
 
 \section{Problem Definition and Solution}
 \label{sec:problem}
@@ -201,7 +200,7 @@ Note that the removed features are only in the context of this paper. These feat
 
 \subsubsection{Remove all zero-variance features}
 
-Variance is a physical quantity used to describe the degree of discreteness of a variable. In a data set, if the variance of a feature is zero, it means that this feature has only one value. Thus this feature cannot import any new information to help training the model. We remove these features to refine the data set.
+Variance is used to describe the discreteness of a variable. In a data set, if the variance of a feature is zero, it means that this feature has only one value. Thus this feature cannot import any new information to help training the model. We remove these features to refine the data set.
 
 \subsubsection{Encode labels}
 
@@ -342,7 +341,7 @@ After the clusters are generated, next step is to find the center of these clust
 
 \subsection{Feature Ranking Based on Information Gain and Gain Ratio Simultaneously}
 
-After the procedure of feature clustering, we generate a group of features which are pairwise independent. In order to further refine the feature space of our data, we choose those have better classification ability. The measure of feature classification ability is the information gain.
+After clustering all features, we generate a group of features which are pairwise independent. In order to further refine the feature space of our data, we choose those have better classification ability. The measure of feature classification ability is the information gain.
 
 We select the top $k$ best feature using information gain and information gain ratio simultaneously. The related definitions are listed as follows:
 
@@ -351,17 +350,15 @@ We select the top $k$ best feature using information gain and information gain r
 \begin{equation}
     H(D) = -\sum_{i=0}^N p_i \log_2 p_i
 \end{equation}
-Specially, if $p_i=0$ then we define $0\log0 = 0$.
+    Specially, if $p_i=0$ then we define $0\log0 = 0$.
 \end{defn}
 
 \begin{defn}[Conditional entropy of data set with given feature]
 The conditional entropy $H(D|f)$ is the uncertainty of data set $D$ under the condition of known feature $f$, which is denoted as
 \begin{align}
-     H(D|f)= & \notag \\
-    & -\sum_{j} p(f=f_j) \times \notag \\
-    & \sum_{i} p(L=l_i|f=f_j) \log_2 p(L=l_i|f=f_j)
+     H(D|f)=-\sum_{j} p(f_j) \sum_{i} p(l_i|f_j) \log_2 p(l_i|f_j)
 \end{align}
-where $p(f=f_j)$ is the probability when feature $f$ takes $f_j$, $p(L=l_i | f=f_j)$ is the conditional probability when label $L$ takes $l_i$ under the condition of $f=f_j$.
+where $p(f_j)$ is the probability when feature $f$ takes $f_j$, $p(l_i|f_j)$ is the conditional probability when label $L$ takes $l_i$ under the condition of $f=f_j$.
 \end{defn}
 
 The information gain indicates the degree to which the uncertainty of the information of the category Y is reduced by the information of the feature X.
@@ -441,16 +438,16 @@ Meanwhile, our proposed method includes some characteristics of PCA. First, we c
 \section{Experiment results}
 \label{sec:evaluation}
 
-In this section, the experiments and evaluation results are shown. First we describe the experiment setup. Then we list selected feature by our algorithm and explain why these feature are selected. Next, since the distance threshold $\delta$ is a changeable parameter, we describe how the numbers of clusters are impacted by different distance threshold. Further, we compare the training time and classification metrics including accuracy, precision, recall and F1-score between our method and the full original data set, as well as our method and Select K Best method based on chi-square function respectively. Finally we illustrate and explain the confusion matrix of our prediction results.
+In this section, the experiments and evaluation results are shown. First we describe the experiment setup. Then we list selected feature by our algorithm and explain why these feature are selected. Next, since the distance threshold $\delta$ is a changeable parameter, we describe how the numbers of clusters are impacted by different distance threshold. Further, we compare the training time and classification metrics including accuracy, precision, recall and F1-score between our method and the full original data set, as well as our method and Select-K-Best method using chi-square function (SKB-chi2) respectively. Finally we illustrate and explain the confusion matrix of our prediction results.
 
 \subsection{Experiment Setup}
 
 All experiments are running on a quad-core Intel PC with 2.90GHz CPU and 16 GB of memory. Our algorithms are implemented in Python 3.7 and the chi-square method is implemented in a Python library scikit-learn\cite{sklearn}. We investigate the impact of distance thresholds and feature spaces on the number of clusters and classification results.
 
 \begin{itemize}
-    \item We compare the number of clusters corresponding to different threshold $\delta$, then explain how to choose best threshold to improve the classification metrics best.
-    \item We compare the training time and classification metrics of this method and the naive method, respectively. In the naive method, the data set is not processed, and all features are used for anomaly detection.
-    \item We compare the training time and classification index of the features selected by this algorithm and the features selected by the chi-square method on the decision tree classifier when the number of features is the same.
+    \item We investigate the effect of different threshold $\delta$ on the number of clusters, then explain how to choose best threshold to improve the classification metrics best.
+    \item We compare the training time and classification metrics of this method and the naive method, respectively. In the naive method, the data set is not processed, and all features are used for model traning and anomaly detection.
+    \item We compare the training time and classification metrics of the features selected by the proposed algorithm and by SKB-chi2 respectively on the decision tree classifier under the condition of the same scale of features.
 \end{itemize}
 
 The related classification metrics including accuracy(Acc), precision(Pre), recall(Rec) and F1-score($F_1$). Their definitions are listed as follows:
@@ -485,7 +482,7 @@ Table \ref{tab:selected-features} shows the features selected by our method and 
 
 \begin{itemize}
 	\item The sizes of packets are important. In the top 10 important features, there are 4 features about packet sizes. Considering the MTU of an IP network, a flow shouldn’t contain too large packets. If the flow meter observes a flow contain large packets, the probability that this stream is an attack stream will be high.
-    \item Another type of important features is the count of packets. In benign flows, the number of packets often small because current network services intend to use short connection to complete the interaction with each other, in order to not occupy the bandwidth resources of the network. However, the attackers intend to send large amounts of packets to exhaust the connection resources and prevent connection from normal users.
+    \item Another important feature type is the count of packets. In benign flows, the number of packets often small because current network services intend to use short connection to complete the interaction with each other, in order to not occupy the bandwidth resources of the network. However, the attackers intend to send large amounts of packets to exhaust the connection resources and prevent connection from normal users.
     \item Time-related features are also important. As we mentioned before, benign services intend to use short connection, while attackers may use long connection. A typical attack is to control the interval of any two flows which is a little shorter than the TCP waiting time. It prevents the TCP connection closing and finally exhaust the connection resources. In practise, time-related features should be considered with the count of packets together.
 \end{itemize}
 
@@ -539,9 +536,7 @@ In our algorithm, an important parameter is the distance threshold $\delta$. It 
     \label{fig:different-threshold}
 \end{figure}
 
-
-
-\subsection{Compare with training time and metrics on full original data set}
+\subsection{Investigate the effect of scale of features on the training time and metrics}
 
 In this subsection we compare the training time of decision tree classifier and the metrics of classification effects between our method under different distance threshold $\delta$ and the full original data set.
 
@@ -612,13 +607,13 @@ The result proved that the feature selected by our method can help improving per
     \label{fig:metrics-full}
 \end{figure}
 
-\subsection{Compare with training time and metrics on chi-square-based Select K Best algorithm}
+\subsection{Investigate the effect of different feature space at the same scale on training time and metrics}
 
 \subsubsection{Training Time}
 
-In this experiment, we compare the training time and metrics of our method and Select-K-Best method using Chi-square funtion in the same size of feature set, in other words the number of features are both set to 10 in these two methods.
+In this experiment, we compare the training time and metrics of our method and SKB-chi2 method in the same size of feature set, in other words the number of features are both set to 10 in these two methods.
 
-The training time comparison is shown in Figure \ref{fig:training-time-with-chi2} and also listed in Table \ref{tab:training-time-all}. We can see our average training time is longer than the chi-square method performs. The chi-square method selects $n$ features with the highest values for the test chi-squared statistic from input data $X$. However, it only considers whether every single feature is correlated with the class label instead of considering the correlation between these features, which makes the training time lower than our methods.
+The training time comparison is shown in Figure \ref{fig:training-time-with-chi2} and also listed in Table \ref{tab:training-time-all}. The table and figure shows that our average training time is longer than the chi-square method performs. The chi-square method selects $n$ features with the highest values for the test chi-squared statistic from input data $X$. However, it only considers whether every single feature is correlated with the class label instead of considering the correlation between these features, which makes the training time lower than our methods.
 As a result, the selected feature subset may contain features with inner relationship, which may bring the redundant information in the model. While our method can effectively eliminate the redundant information.
 
 \begin{figure}[!htpb]
@@ -699,9 +694,12 @@ Finally we analyze the confusion matrix of our method. The confusion matrix is s
 \label{sec:conclusion}
 
 Conventional network anomaly detection methods take a large amount of features of network traffic into account. 
-However dimension disaster of network traffic data severely decrease the efficiency and accuracy of network anomaly detection mechanisms. In this paper we propose a novel efficient network anomaly detection scheme via selective features. 
-Essential key features of network traffic are selected by feature clustering and feature ranking algorithms orderly, then C4.5 decision tree classifier is used to classify the refined data subset. 
-The experimental results show that our scheme can select more critical features which makes training time decreasing when training the decision tree classifier, and all classification metrics increases. 
+However dimension disaster of network traffic data severely decrease the efficiency and accuracy of network anomaly detection mechanisms. In this paper we propose a novel efficient network anomaly detection scheme using selective features. 
+The most important part of proposed scheme is feature selection. 
+Essential key features of network traffic are selected by feature clustering and feature ranking algorithms orderly. Feature clustering is based on correlation coefficient, and feature ranking is calculated with information gain and gain ratio simultaneously.
+Then C4.5 decision tree classifier is used to train the model and detect abnormal flows. 
+Experimental results show that on CIC-IDS-2018 data set, the proposed scheme can decrease the training time from about 300 seconds to about 200 seconds. Besides, the proposed scheme can increase 1\% of accuracy, 1\% of precision, 2\% of recall and 1\% of F1-score, as comparing to training the classifier with full data set. 
+Under the condition of same scale of selected features, although the training time of the proposed method is 100 second longer, it can also increase 3\% of accuracy, 12\% of precision, 10\% of recall and 8\% of F1-score, as comparing to Seleck-K-Best method with chi-square method.
 
 In the future, we will continue researching the methods of real-time network data analysis and real-time model of training and detection for network traffic.
 
