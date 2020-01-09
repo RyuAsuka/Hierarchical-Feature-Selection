@@ -53,7 +53,7 @@
     In this paper, we propose an efficient network anomaly detection mechanism by selecting essential features that can quickly detect multiple types of anomalies without compromising the detection accuracy.
     The proposed scheme selects key features by clustering and ranking all variables, and classifies network traffic to detect anomalies based on selected features.
     Experimental results show that on CIC-IDS-2018 data set, the proposed scheme can reduce the training time from about 300 seconds to about 200 seconds. Besides, the proposed scheme can achieve improvements at least 1\% of classification metrics, as compared to training the classifier with full data set. 
-    Under the condition of same scale of selected features, although the training time of the proposed method is 100 second longer, it can also achieve more than 3\% of classification metrics, as compared to Select-K-Best method with chi-square method.
+    Under the condition of the same scale of selected features, it can achieve more than 3\% of classification metrics, as compared to Select-K-Best method with chi-square (SKB-chi2) method.
 \end{abstract}
 
 \begin{keywords}
@@ -66,26 +66,27 @@
 
 \section{Introduction}
 \label{sec:introduction}
-Network traffic anomaly detection has become a necessity due to proliferation of information technologies across safety critical applications. In recent years, network attacks aiming at public information services appears more frequently and their consequences become more severe.
+Network traffic anomaly detection has become a necessity due to proliferation of information technologies across safety critical applications. In recent years, cyber attacks on public information services have become more frequent and have had more serious consequences.
 On March 2015, GitHub faced a massive DDoS attack. The attack lasted for one week and caused significant damages\cite{github-2015}. On October 2016, Dyn's DNS servers was attacked for two hours, during that time, internet users directed to Dyn servers were unable to reach some of the marquee brands of the internet\cite{dyn-2016}. On May 2017, the WannaCry ransomware attack bursted and over 200,000 compromised computers across 150 countries were influenced by this virus and economic losses from the cyber attack could reach up to 4 billion dollars\cite{wannacry-2017}.
+Therefore, how to quickly detect network anomalies has become a key issue for researchers and enterprises.
 
 A large amount of effort of this issue have been promoted.
-Wang et al.\cite{Wang2020CS} proposed a dynamic Multilayer-Perceptron (MLP) -based attack detection method. The feature selection process of their work uses backward selection filter method. This method can remove the features which make the accuracy of MLP decreasing more than threshold and the remainings are the selected features. Urmila et al.\cite{Urmila2017} proposed a distributed collaboration detection scheme that combines the advantages of anomaly and signature based method by capturing the packet header in real time. Al-Hawawreh\cite{MunaSulieman2017} discussed the SYN flood attack in virtual cloud. The anomaly is detected based on new features that extracted from TCP/IP header. Alsharafi et al.\cite{Alsharafi2020} investigated a normal profile updating method (NPUM) for enhancing the PHAD based IDS model, which updates normal profile of anomaly IDS using further processing of both the normal and abnormal data identified by anomaly detector. 
+Wang et al.\cite{Wang2020CS} proposed a dynamic Multilayer-Perceptron(MLP)-based attack detection method. The feature selection process of their work uses backward selection filter method. This method can remove the features which makes the accuracy of MLP decreasing more than threshold and the remainings are the selected features. Urmila et al.\cite{Urmila2017} proposed a distributed collaboration detection scheme that combines the advantages of anomaly and signature based method by capturing the packet header in real time. Al-Hawawreh\cite{MunaSulieman2017} discussed the SYN flood attack in virtual cloud. Network anomalies are detected based on new features that extracted from TCP/IP header. Alsharafi et al.\cite{Alsharafi2020} investigated a normal profile updating method (NPUM) for enhancing the PHAD based IDS model, which updates normal profile of anomaly IDS using further processing of both the normal and abnormal data identified by anomaly detector. 
 Above methods only use header information of flow packets, while diverse types of network anomalies cannot be distinguish effectively only by packet headers. The malicious users may construct and send the packets elaborately to escape the detection from intrusion detection systems(IDS). Once these packets pass the prevension and propagate in the network, the target computer or network device will be compromised.
 
 To solve this issue, many other works take more statistical information extracted by aggregated flows with the header information to detect network anomalies. Fernandes et al.\cite{Fernandes2015} used digital signature of network segment using flow analysis to detect abnormal events. According to the results of this work, Ant Colony Optimization takes higher accuracy while PCA takes shorter detection time. All of methods in \cite{Fernandes2015} use data in sFlow format. The authors in \cite{Anwer2018} mentioned that using all features in UNSW-NB15 data set \cite{UNSW-2015} can only reach 76.9\% of accuracy and its execution time is longer than the proposed strategies. A comprehensive survey \cite{Fernandes2019} reviewed a series of machine-learning-based network anomaly detection methods. This survey mentioned that using machine-learning-based methods to learn a large data set can bring high detection rate for acknowledged attacks, but it may cost high resource consumption and may cause over-fitting. We can conclude that using more features, the detection systems can distinguish more types of attacks and the accuracy improves higher.
 
-However, the cost of high accuracy is lower efficiency. It may bring problems of dimensional explosion. A flow may have more than 30 features in the header alone. Considering the statistical characteristics of all packets in flows, number of features in a network data set will grow rapidly. These features may exist correlations or derivations. If we take all features into consideration, on one hand the efficient of learning and modeling algorithms will decrease, on the other hand it is hard to find the intrinsic cause that can determine whether a flow is an attack.
+However, the cost of improving the ability to distinguish between network anomalies is lower detection efficiency. This will cause the problem of dimensional explosion. Network flows have more than 30 features in the packet header alone. If you consider the various derived statistical features, the number of features in each flow will increase significantly. There may also be correlations or derivations between these features. If we use all features for statistical learning, on the one hand, it will reduce the efficiency of anomaly detection, on the other hand, it will make us unable to focus on determining the essential characteristics of network anomalies.
 
-In this paper, we propose an efficient network anomaly detection scheme with a novel feature selection procedure to reduce dimensions of traffic flow data and to keep high accuracy of flow detector. The contributions of our paper can be summarized as follows:
+In this paper, we propose an efficient network anomaly detection method, which includes a new feature selection process to reduce the number of features of network stream data and maintain high accuracy of the detection model. The main contributions of this article are as follows:
 
 \begin{itemize}
-    \item This paper proposes a feature selection scheme using clustering and ranking techniques. The feature clustering is based on Pearson correlation coefficient. The feature ranking is based on information gain and gain ratio. These two algorithms can find key essential features in network traffic data.
-    \item We build an anomaly detection model based on decision tree classifier. This model uses key features to determine flow classes efficiently.  % TODO：用一句话描述如何使用decision tree提升整个算法的efficient
-    \item This paper compares proposed scheme with naive method and Seleck-K-Best (SKB) method using chi-square function. Experiment results show that the proposed scheme performs better in accuracy, precision, recall and F1-score, and trains faster than naive method. % TODO: 和摘要一致
+    \item This paper proposes a new feature selection algorithm using clustering and ranking techniques. Feature clustering algorithms are based on Pearson correlation coefficients and combine features with potential correlations into the same cluster. Feature ranking algorithm uses both information gain and gain ratio. These two algorithms can identify key features in network traffic data.
+    \item This paper builds a network traffic anomaly detection model based on a decision tree classifier. Based on the key features of the model, the C4.5 decision tree classifier is used to more quickly generate a decision tree of a specified size, so that the model can detect network traffic anomalies faster, while ensuring the accuracy of the detection.
+    \item Experiments show that on the CIC-IDS-2018 dataset, our proposed method can reduce the training time by about 100 seconds and improve the classification metrics by at least 1\%. Compared with the Select-K-Best method with Chi-square function(SKB-Chi2), under the condition of the same scale of selected features, our method can improve the classification metrics by at least 3\%.
 \end{itemize}
 
-The remaining part of the paper is organized as follows: Section \ref{sec:related} describes related works. Section \ref{sec:problem} describes the formalization of feature selection problem. Section \ref{sec:methods} introduces and analyzes the proposed detection scheme. Section \ref{sec:evaluation} shows the experiment results and the discussion about the results. Finally Section \ref{sec:conclusion} concludes this paper and indicates future works.
+The remaining parts of the paper are organized as follows: Section \ref{sec:related} describes related works. Section \ref{sec:problem} describes the formalization of feature selection problem. Section \ref{sec:methods} introduces proposed feature clustering and ranking scheme, then explain the building of detection model and the difference between proposed scheme and dimensional reduction methods. Section \ref{sec:evaluation} shows the experiment results and the correlated discussions. Finally Section \ref{sec:conclusion} concludes this paper and indicates future works.
 
 \section{Related Works}
 \label{sec:related}
@@ -561,7 +562,7 @@ Meanwhile this figure shows that the average training time increases slowly with
         $\delta=0.9$ &   269.39 \\
         $\delta=0.95$ & 269.89 \\
         Full data set & 308.14 \\
-        Select K Best ($\chi^2$) & 103.36 \\
+        SKB-Chi2 & 203.36 \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -595,7 +596,7 @@ The result proved that the feature selected by our method can help improving per
             $\delta=0.9$ &  97.9557 & 78.9994 & 80.3196 & 78.6552 \\
             $\delta=0.95$ &	97.9489 & 78.8134 & 79.9506 & 79.2532 \\
             Full data set &	97.1315 & 78.0325 & 80.2580 & 77.3223 \\
-            Select K Best($\chi^2$) & 94.2846 & 72.1371 & 68.7105 & 69.1960 \\
+            SKB-Chi2 & 94.2846 & 72.1371 & 68.7105 & 69.1960 \\
         \bottomrule
     \end{tabular}
 \end{table*}
@@ -693,15 +694,14 @@ Finally we analyze the confusion matrix of our method. The confusion matrix is s
 \section{Conclusion}
 \label{sec:conclusion}
 
-Conventional network anomaly detection methods take a large amount of features of network traffic into account. 
-However dimension disaster of network traffic data severely decrease the efficiency and accuracy of network anomaly detection mechanisms. In this paper we propose a novel efficient network anomaly detection scheme using selective features. 
-The most important part of proposed scheme is feature selection. 
-Essential key features of network traffic are selected by feature clustering and feature ranking algorithms orderly. Feature clustering is based on correlation coefficient, and feature ranking is calculated with information gain and gain ratio simultaneously.
-Then C4.5 decision tree classifier is used to train the model and detect abnormal flows. 
-Experimental results show that on CIC-IDS-2018 data set, the proposed scheme can decrease the training time from about 300 seconds to about 200 seconds. Besides, the proposed scheme can increase 1\% of accuracy, 1\% of precision, 2\% of recall and 1\% of F1-score, as comparing to training the classifier with full data set. 
-Under the condition of same scale of selected features, although the training time of the proposed method is 100 second longer, it can also increase 3\% of accuracy, 12\% of precision, 10\% of recall and 8\% of F1-score, as comparing to Seleck-K-Best method with chi-square method.
+Traditional network anomaly detection methods need to consider a large number of traffic features. 
+But this will cause a dimensional disaster problem, which will seriously reduce the efficiency and accuracy of the anomaly detection method. 
+In this paper, we propose a novel efficient network anomaly detection scheme, which uses feature selection methods to reduce the dimensions of traffic data and improves the efficiency and accuracy of detection. 
+The most important part of this method is the feature selection algorithm proposed in this paper. The algorithm contains two parts: feature clustering and feature ranking. The feature clustering algorithm uses correlation coefficients to merge features with correlated features into the same cluster. The feature ranking algorithm uses both information gain and gain ratio to select the most important features. Based on this, we use the C4.5 decision tree as a classifier to construct a network traffic anomaly detection model.
 
-In the future, we will continue researching the methods of real-time network data analysis and real-time model of training and detection for network traffic.
+The experimental results show that on the CIC-IDS-2018 dataset, our proposed method can reduce the training time by about 100 seconds and improve the classification index by at least 1\%. Compared with the SKB-Chi2 method, with the same number of features, our method can improve the classification index by at least 3\%.
+
+In the future, we will continue to study the analysis of real-time network traffic data and the real-time detection model of network anomalies to improve the practicality of detection schemes.
 
 % \bibliographystyle{IEEEtran}
 % % argument is your BibTeX string definitions and bibliography database(s)
@@ -729,7 +729,7 @@ In the future, we will continue researching the methods of real-time network dat
     H.M. Anwer, M. Farouk and A. Ayman, ``A Framework for Efficient Network Anomaly Intrusion Detection with Features Selection,'' in \emph{Proceedings of 9th International Conference on Information and Communication Systems}, pp. 157--162, 2018.
 
     \bibitem{UNSW-2015}
-    ``UNSW-NB15 dataset''. [Online]. Available: \\https://cloudstor.aarnet.edu.au/plus/index.php/s/2DhnLGDdEECo4ys?path=\%2F
+    ``UNSW-NB15 dataset''. [Online]. Available: \\https://cloudstor.aarnet.edu.au/plus/index.php/s/\\2DhnLGDdEECo4ys?path=\%2F
 
     \bibitem{Fernandes2019}
     G. Fernandes, J. Rodrigues, L. F. Carvalho, J. F. Al-Muhtadi and M.L. Proença, ``A comprehensive survey on network anomaly detection,'' \emph{Telecommunication Systems}, vol. 70, no. 3, pp. 447--489, 2019
