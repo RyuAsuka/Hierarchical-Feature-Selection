@@ -89,6 +89,7 @@ In this paper, we propose an efficient network anomaly detection technique. The 
 
 The remaining parts of the paper are organized as follows: Section \ref{sec:related} describes related works. Section \ref{sec:problem} describes the formalization of feature selection problem. Section \ref{sec:methods} introduces proposed feature clustering and ranking scheme, then explain the building of detection model and the difference between proposed scheme and dimensional reduction methods. Section \ref{sec:evaluation} shows the experiment results and the correlated discussions. Finally Section \ref{sec:conclusion} concludes this paper and indicates future works.
 
+% TODO: Modify or rewrite related works.
 \section{Related Works}
 \label{sec:related}
 
@@ -436,11 +437,11 @@ Meanwhile, our proposed method includes some characteristics of PCA. First, we c
 \section{Experiment results}
 \label{sec:evaluation}
 
-In this section, the experiments and evaluation results are shown. First we describe the experiment setup. Then we list selected feature by our algorithm and explain why these feature are selected. Next, since the distance threshold $\delta$ is a changeable parameter, we describe how the numbers of clusters are impacted by different distance threshold. Further, we compare the training time and classification metrics including accuracy, precision, recall and F1-score between our method and the full original data set, as well as our method and Select-K-Best method using chi-square function (SKB-chi2) respectively. Finally we illustrate and explain the confusion matrix of our prediction results.
+In this section, the experiments and evaluation results are shown. First we describe the experiment setup. Then we list selected feature by our algorithm and explain why these feature are selected. Next, since the distance threshold $\delta$ is a changeable parameter, we describe how the numbers of clusters are impacted by different distance threshold. Further, we compare the training time and classification metrics including accuracy, precision, recall and F1-score between our method and the full original data set, as well as our method and benchmark method respectively. The benchmark method is Select-K-Best method using chi-square function, denoted as SKB-chi2 method. Finally we illustrate and explain the confusion matrix of our prediction results.
 
 \subsection{Experiment Setup}
 
-All experiments are running on a quad-core Intel PC with 2.90GHz CPU and 16 GB of memory. Our algorithms are implemented in Python 3.7 and the chi-square method is implemented in a Python library scikit-learn\cite{sklearn}. We investigate the impact of distance thresholds and feature spaces on the number of clusters and classification results.
+All experiments are running on a quad-core Intel PC with 2.90GHz CPU and 16 GB of memory. Our algorithms are implemented in Python 3.7 and the benchmark method is implemented in a Python library scikit-learn\cite{sklearn}. We investigate the impact of distance thresholds and feature spaces on the number of clusters and classification results.
 
 \begin{itemize}
     \item We investigate the effect of different threshold $\delta$ on the number of clusters, then explain how to choose best threshold to improve the classification metrics best.
@@ -631,15 +632,6 @@ The classification metrics comparison is shown in Figure\ref{fig:metrics-chi2} a
     \caption{The metrics of the data subset with different $\delta$ and the SelectKBest method based on $\chi^2$ function.}
     \label{fig:metrics-chi2}
 \end{figure}
-
-% \begin{table*}[!h]
-%     \centering
-%     \caption{Confusion matrix of classification results.}
-%     \label{tab:confusion-matrix}
-%     \begin{tabular}{c}
-%         \includegraphics[scale=0.45]{fig/confusion-matrix-p.pdf}
-%     \end{tabular}%
-% \end{table*}
 
 \begin{table*}
     \centering
