@@ -89,19 +89,29 @@ In this paper, we propose an efficient network anomaly detection technique. The 
 
 The remaining parts of the paper are organized as follows: Section \ref{sec:related} describes related works. Section \ref{sec:problem} describes the formalization of feature selection problem. Section \ref{sec:methods} introduces proposed feature clustering and ranking scheme, then explain the building of detection model and the difference between proposed scheme and dimensional reduction methods. Section \ref{sec:evaluation} shows the experiment results and the correlated discussions. Finally Section \ref{sec:conclusion} concludes this paper and indicates future works.
 
-% TODO: Modify or rewrite related works.
 \section{Related Works}
 \label{sec:related}
 
-Different approaches have been proposed to improve the performance of feature selection. Expectation-Maximization (EM)\cite{Law2004} algorithm estimates the importance of different features and the best number of components for Gaussian-mixture clustering. EM can avoid running EM many times with different numbers of components and different feature subsets, and can achieve better performance than using all the available features for clustering. However, the intermediate variables of EM cannot be held in memory when the data set is large. A modified Network Maximal Correlation (NMC) model\cite{Yang2018} captures correlation relationships between a characteristic variable and a label variable. The results show the method can obtain an optimal subset of features with faster speed, maximum correlation and minimal redundancy through numerical simulation. Moreover, \cite{Law2004} and \cite{Yang2018} are both not applicable to categorical data and automatic parameters tuning.
+In past several years, researchers have proposed a large amount of network anomaly detection schemes. All of them take feature selection techniques into account to reduce the superfluous traffic features. 
 
-In addition, various of new feature selection approaches have been presented in the past years. A new feature selection algorithm based on features unit (FU) is proposed in \cite{Wu2017}, which uses entropy of information to obtain features units and sort them to selected the appropriate one. The results in the UCI datasets show that the FU performs better than MIFS-U and mRMR on the whole. Yassine et al.\cite{Yassine2017} proposed a new hybrid filter-wrapper algorithm of feature selection based on pairwise feature selection, which benefits from the speed up and the ease of use of filters and the good performance of wrappers. The results indicate that the selected subset of features by the proposed approach has a good classification performance. But the datasets which they used only have few instances or high number of features and the algorithm may not be extended to other datasets.  In \cite{Yang2018a}, a novel unsupervised feature selection method is used where constructing similarity matrix and performing feature selection are together incorporated into a coherent model. The results show the proposed approach has better performance to solve the objective function and extensive experiments on face images and benchmark datasets. Ke et al.\cite{Ke2018} proposed a redundant window-based optimal feature subset discover algorithm for feature selection, which use the growth algorithm to discover the relevant features and use the shrink algorithm to eliminate the redundant ones. The results show that the method has a good performance in terms of accuracy and scalability, and improves the execution efficiency of feature selection and traffic classification.
+A series of researches \cite{Bajaj2013, Wahba2015, Kumar2016, Kuar2018, Cavusoglu2019} considered using information theory and statistical correlations between features of traffic data. 
+Bajaj et al.\cite{Bajaj2013} proposed a method for feature selection using information gain, information gain ratio, and correlation coefficients, and compared accuracy of these three feature selection methods when applied to machine learning algorithms such as Naive Bayes, decision tree, and support vector machine. However, this work did not comprehensively use these three feature selection methods, but applied them independently. In addition, the data set used in this work is the NSL-KDD data set, which is a fairly old data set. The types of network attacks contained in it are outdated and are not suitable for the current network environment.
+Wahba et al.\cite{Wahba2015} proposed a hybrid feature selection method, which is also based on the correlation between features and information gain. The author uses greedy search algorithm to select 10 features to form a new feature set, then uses Adaboost algorithm combined with information gain to find the best feature. The highest F-measure was achieved by using this method, on the NSL-KDD dataset. On the one hand, this method does not take into account the impact of the imbalanced distribution of classes on the detection algorithm. On the other hand, the method does not perform well in detecting U2R and R2L attacks.
+Next, Kumar et al.\cite{Kumar2016} also used correlation coefficients, information gains, and information gain ratios for feature selection. The author calculates and ranks the correlation coefficients of each feature and class labels to find the feature combination with the greatest conditional probability. Compared with the Naive Bayes method, this method greatly improves the accuracy, and reduces the detection time compared to the decision tree algorithm. However, this method only considers the correlation between each feature and the class labels, while the correlation between features are not considered. Moreover, compared with decision trees, their method has no advantages in terms of accuracy and false alarm rate.
+The authors of \cite{Kuar2018} used information gain and Gini covariance as feature selection methods. It finally selected 26 features from the KDD CUP 99 dataset. However, on the one hand, the method uses a deprecated data set. On the other hand, the method performs poorly when detecting U2R-type attacks.
+The literature \cite{Cavusoglu2019} adopted the feature subset selection method based on correlation and wrapper method to reduce 41 features to 25 in the NSL-KDD dataset. In this work, the data set is divided into three subsets according to the protocol type, which are respectively applied to CfsSubsetEval and WrapperSubsetEval procedures. Then the results of these two procedures are combined to obtain a new feature subset. In our opinion, it is not a good practice to group actual network traffic by protocol type, which will lead to overfitting of the model.
 
-Liu et al.\cite{Liu2018} proposed a differentially private ensemble feature selection algorithm based on output perturbation. The results also demonstrate the high performance under certain privacy preservation degree of the method. Genetic-Algorithm-based feature selection \cite{Ferriyan2017} finds the optimal features from NSL-KDD data set, which use one-point crossover for the Genetic Algorithm parameters instead of two-point crossover. The results show the proposed approach performs better in classification rate and the training time compared to several other classifiers. In \cite{Han2020}, a novel unsupervised feature selection method was proposed. It leverages the graph matrix learning and the low-dimensional space learning to obtain their individually optimized result. The results on real datasets verified that the method achieved the best classification performance compared to the state-of-the-art feature selection methods. The deficiency of the feature selection is that it could not apply on the high-dimensional data with incomplete data. 
+Except information theory-based methods, there are also other feature selection techniques \cite{Beulah2015, Ferriyan2017, Dong2017} used for network traffic classification or anomaly detection. 
+The literature \cite{Beulah2015} studied the problem of reducing false alarm detection rate through feature selection. This work proposes Simple Hybrid Feature Selection (SHFS). The author uses a combination of multiple feature selection methods to generate the feature subset with the most occurrences, then uses these features for multiple classifiers for comparison. Experimental results show that the proposed method effectively reduces the false alarm rate and has a small improvement on other classification metrics. However, this method is simply a hybrid of several existing feature selection methods, and these feature selection methods have not been properly composed.
+Genetic-Algorithm-based feature selection \cite{Ferriyan2017} finds the optimal features from NSL-KDD data set, which use one-point crossover for the Genetic Algorithm parameters instead of two-point crossover. The results show the proposed approach performs better in classification rate and the training time compared to several other classifiers. 
+Dong et al.\cite{Dong2017} studied Internet video traffic data and used a hierarchical method to classify these data. The literature uses a consistency-based method and data mining algorithms for feature selection. In a real network environment, this method can better classify Internet video data and reduce the time overhead. However, the algorithm has high complexity and is slightly weaker than traditional methods in recall rate.
 
-Feature selection also have been broadly used in processing traffic data. Shi et al.\cite{Shi2017} proposed a novel feature extraction and selection approach to provide the optimal and robust features for traffic classification, which based on multifractal features, the observation of the multifractal features and the analysis of PCA-based feature selection. The results show the approach achieves better classification performance, lower runtime performance and more effective for real-time traffic classification compared to the TLS features. Moreover, the authors then propose a new feature optimization approach based on deep learning and Feature Selection (FS) techniques\cite{Shi2018} to provide the optimal and robust features for traffic data sets. The results show the approach achieves the best classification performance and relatively higher runtime performance compared with the approaches used in the previous work.
+In addition, two other recent literatures have adopted other machine learning methods for feature selection. 
+Shi et al.\cite{Shi2017} proposed a novel feature extraction and selection approach to provide the optimal and robust features for traffic classification, which based on multifractal features, the observation of the multifractal features and the analysis of PCA-based feature selection. The results show the approach achieves better classification performance, lower runtime performance and more effective for real-time traffic classification compared to the TLS features. 
+Moreover, the authors then propose a new feature optimization approach based on deep learning and Feature Selection (FS) techniques\cite{Shi2018} to provide the optimal and robust features for traffic data sets. The results show the approach achieves the best classification performance and relatively higher runtime performance compared with the approaches used in the previous work.
 
-Besides, there are different feature selection methods aim to process different kinds of data. Dong et al.\cite{Dong2017} proposed a fine grained classification scheme which based on a hierarchical kNN classifier for network video traffic. The results show that the proposed method outperforms existing methods applying commonly used flow statistical features. Taskin et al.\cite{Taskin2017} presented a novel feature-selection method based on High Dimensional Model Representation (HDMR) to analyze and test in classification of hyperspectral images. The results show that the proposed approach can be used as a fast and efficient feature-selection method yielding very competitive results compared to the state-of-art feature-selection methods. However, the numerical values of the multiclass case class labels have the potential to bring some bias to the estimations. Valadi et al.\cite{Valadi2019} proposed a new modification of attribute selection with multiple label which can be advantageously used for handling high dimensional multi-level datasets. The results show the proposed approach reduces complexity and computational run time.
+In summary, we need a method that is able to organically compose various feature selection methods and detect anomalies in new network traffic data.
+
 
 \section{Problem Definition and Solution}
 \label{sec:problem}
@@ -729,32 +739,23 @@ In the future, we will continue to study the analysis of real-time network traff
     \bibitem{Alsharafi2020}
     W.M. Alsharafi, M.N. Omar, N.A. Al-Majmar and Y. Fazea, ``Normal Profile Updating Method for Enhanced Packet Header Anomaly Detection,'' \emph{Emerging Trends in Intelligent Computing and Informatics}, pp. 734--737, 2019.
 
-    \bibitem{Law2004}
-    M.H.C. Law, M.A.T. Figueiredo and A.K. Jain, ``Simultaneous Feature Selection and Clustering Using Mixture Models,'' \emph{IEEE Transactions on Pattern Analysis and Machine Intelligence}, vol. 26, no. 9, pp. 1154--1166, 2004.
+    \bibitem{Bajaj2013}
+    K. Bajaj and A. Arora, ``Dimension Reduction in Intrusion Detection Features Using Discriminative Machine Learning Approach,'' \emph{International Journal of Computer Science Issues}, vol. 10, no. 4, pp. 324--329, 2013.
 
-    \bibitem{Yang2018}
-    X. Yang, Q. Wang and Y. Wang, ``Feature selection based on network maximal correlation,'' in \emph{Proceedings of International Symposium on Wireless Personal Multimedia Communications}, pp. 448--452, 2017.
+    \bibitem{Kumar2016}
+    K. Kumar and J. S. Batth, ``Network Intrusion Detection with Feature Selection Techniques using Machine-Learning Algorithms,'' \emph{International Journal of Computer Applications}, vol. 150, no. 12, pp. 1--13, 2016.
 
-    \bibitem{Wu2017}
-    J. Wu and C. Li, ``Feature Selection Based on Features Unit,'' in \emph{Proceedings of International Conference on Information Science and Control Engineering}, pp. 330--333, 2017.
+    \bibitem{Wahba2015}
+    Y. Wahba, E. ElSalamouny and G. ElTaweel, ``Improving the Performance of Multi-class Intrusion Detection Systems using Feature Reduction,'' \emph{International Journal of Computer Science Issues}, vol. 12, no. 3, pp. 255--262, 2015.
 
-    \bibitem{Yassine2017}
-    A. Yassine, C. Mohamed and A. Zinedine, ``Feature selection based on pairwise evalution,'' in \emph{Proceedings of Intelligent Systems and Computer Vision}, pp. 1--6, 2017.
+    \bibitem{Kuar2018}
+    P. Kaur, P. Chaudhary, A. Bijalwan and A. Awasthi, ``Network Classification Using Multiclass Classifier,'' in \emph{Proceedings of International Conference on Advances in Computing and Data Sciences}, pp. 208-217, 2018.
 
-    \bibitem{Yang2018a}
-    S. Yang, F. Nie and X. Li, ``Unsupervised Feature Selection with Local Structure Learning,'' in \emph{Proceedings of IEEE International Conference on Image Processing}, pp. 3398--3402, 2018.
-
-    \bibitem{Ke2018}
-    W. Ke, Y. Wang, X. Lei and B. Wei, ``Spark-Based Feature Selection Algorithm of Network Traffic Classification,'' in \emph{Proceedings of International Conference on Computational Intelligence and Security}, pp. 140--144, 2017.
-    
-    \bibitem{Liu2018}
-    Z. Liu, Y. Li and W. Ji, ``Differential Private Ensemble Feature Selection,'' in \emph{Proceedings of International Joint Conference on Neural Networks}, pp. 1--6, 2018.
+    \bibitem{Beulah2015}
+    J. R. Beulah and D. ShaliniPunithavathani, ``Simple Hybrid Feature Selection (SHFS) for Enhancing Network IntrusionDetection with NSL-KDD Dataset,'' \emph{International Journal of Applied Engineering Research}, vol. 10, no. 19, pp. 40498--40505, 2015.
 
     \bibitem{Ferriyan2017}
     A. Ferriyan, A.H. Thamrin, K. Takeda and J. Murai, ``Feature selection using genetic algorithm to improve classification in network intrusion detection system,'' in \emph{Proceedings of International Electronics Symposium on Knowledge Creation and Intelligent Computing}, pp. 46--49, 2017.
-
-    \bibitem{Han2020}
-    X. Han, P. Liu, L. Wang and D. Li, ``Unsupervised feature selection via graph matrix learning and the low-dimensional space learning for classification,'' \emph{Engineering Applications of Artificial Intelligence}, to be published. DOI: 10.1016/j.engappai.2019.103283.
 
     \bibitem{Shi2017}
     H. Shi, H. Li, D. Zhang, C. Cheng and W. Wu, ``Efficient and robust feature extraction and selection for traffic classification,'' \emph{Computer Networks}, vol. 119, pp. 1--16, 2017.
@@ -765,11 +766,8 @@ In the future, we will continue to study the analysis of real-time network traff
     \bibitem{Dong2017}
     Y. Dong, J. Zhao and J. Jin, ``Novel feature selection and  classification of Internet video traffic based on a hierarchical scheme,'' \emph{Computer Networks}, vol. 119, pp. 102--111, 2017.
 
-    \bibitem{Taskin2017}
-    G. Taskin, H. Kaya and L. Bruzzone, ``Feature Selection Based on High Dimensional Model Representation for Hyperspectral Images,'' \emph{IEEE Transactions on Image Processing}, vol. 26, no. 6, pp. 2918--2928, 2017.
-
-    \bibitem{Valadi2019}
-    J.K. Valadi, P.T. Ovhal, and K.J. Rathore, ``A Simple Method of Solution For Multi-label Feature Selection,'' in \emph{Proceedings of IEEE International Conference on Electrical, Computer and Communication Technologies}, pp. 1--4, 2019.
+    \bibitem{Cavusoglu2019}
+    U. Cavusoglu, ``A New Hybrid Approach for Intrusion Detection Using Machine Learning Methods,'' \emph{Applied Intelligence}, vol. 49, no. 7, pp. 2735--2761, 2019.
 
     \bibitem{Maza2018}
     M. Sofiane and T. Mohamed, ``Feature selection algorithms in intrusion detection system: A survey,'' \emph{KSII Transactions on Internet and Information Systems}, vol. 12, no. 10, pp. 5079-5099, 2018.
