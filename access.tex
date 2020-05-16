@@ -162,11 +162,20 @@ In this section, the proposed clustering-based feature selection mechanism is de
 
 \Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.6]{figs/fig2.pdf}{Data preprocessing. \label{fig:preprocessing}}
 
-Figure \ref{fig:preprocessing} shows the preprocessing procedure. The network traffic data set is extracted from real network traffic, so there may be some abnormal data (marked as ``NaN'' in the data set). The first step of preprocessing is to clean up these abnormal data. There are three kinds of features in the network dataset: nominal , binary and numerical. In order to digitize the nominal data, we use One-Hot encoding to convert the nominal features. To discretize numerical data, we use the discretizer in \cite{Mazumder2012}. In addition, we eliminate features with low variance, which do not help feature selection.
+Figure \ref{fig:preprocessing} shows the preprocessing procedure. The network traffic data set is extracted from real network traffic, so there may be some abnormal data (marked as ``NaN'' in the data set). The first step of preprocessing is to clean up these abnormal data. There are three kinds of features in the network dataset: nominal, binary and numerical. 
+We use One-Hot encoding to convert the nominal features to a sparse matrix. We ranked the number of occurrences of nominal variables and combined those with too few occurrences, which effectively reduced the number of new features actually generated. 
+To discretize numerical data, we use the discretizer proposed in \cite{Mazumder2012}. 
+In addition, we eliminate features with low variance. The value range of these features is too small, which is not conducive to our feature selection algorithm.
 
 \subsection{Phase 1: Feature Clustering}
 
-The redundancy of features is produced by the featrue extraction tools. If we use the whole data set to train our model, the redundant features on one hand may increase the computation and spend more time, on the other hand these redundant features cannot import any new informations into our model. So it is necessary to merge these redundant features. In this paper, we use clustering method to reach this target.
+In this phase, we use clustering method to reduce the dimensions of feature space. 
+We merge all features with high correlation into the same cluster
+The redundancy of features is produced by the featrue extraction tools. 
+If we use the whole data set to train our model, the redundant features on one hand may increase the computation and spend more time, on the other hand, these redundant features cannot import any new informations into our model. 
+So it is necessary to merge these redundant features. 
+
+\subsubsection{Definition of ``distance'' between features}
 
 First the concept of correlation coefficient is reviewed. Then we use correlation coefficient to define ``distance'' between any two feature vectors. 
 
@@ -184,8 +193,6 @@ First the concept of correlation coefficient is reviewed. Then we use correlatio
     \end{cases}$$
 \end{defn}
 
-\subsubsection{Definition of ``distance'' between features}
-
 \begin{defn}[The distance of two features]
     \label{def:distance}
     The distance of two feature vectors $\bm{f_i}$ and $\bm{f_j}$ is the reciprocal of the absolute value of correlation coefficient of them, that is
@@ -199,11 +206,13 @@ Here we minus one from reciprocal of absolute of correlation coefficient is to l
 
 \subsubsection{Clustering Algorithms}
 
-According to Equation \ref{eq:distance}, if two features have potential linear correlation, the distance between them is small. On the contrary, if the distance between two features are large, these two features are independent relatively. Here we consider both positive correlation and negative correlation are the same, so we use absolute value of the correlation coefficient. However, the more indepent two features are, the less absolute correlation coefficient of them is. This is the exact opposite of our general definition of distance. Hence we use reciprocal to solve this problem.
+The clustering algorithm is described as Algorithm \ref{alg:clustering} and Algorithm \ref{alg:compare-and-join}.
+According to Equation \ref{eq:distance}, if two features have potential linear correlation, the distance between them is small. On the contrary, if the distance between two features are large, these two features are independent relatively. Here we consider both positive correlation and negative correlation are the same, so we use absolute value of the correlation coefficient. However, the more indepent two features are, the less absolute correlation coefficient of them is. This is the exact opposite of our general definition of distance. Hence we use reciprocal to solve this problem. We use $\delta' = 1/\delta$ here, so that we limit the threshold to the range $[0,1]$.
 
-The clustering algorithm is described as Algorithm \ref{alg:clustering} and Algorithm \ref{alg:compare-and-join}. We calculate the distance between every two features. If the distance is less than a threshold $\delta$, the feature is treated as linear related with the other and they belong to the same cluster. Otherwise, the feature will be put in a new cluster. The procedure \emph{compare\_and\_join} at the 5th line of Algorithm \ref{alg:clustering} is complicated, so we list it as Algorithm \ref{alg:compare-and-join}.
+We calculate the distance between every two features. If the distance is less than a threshold $\delta$, the feature is treated as linear related with the other and they belong to the same cluster. Otherwise, the feature will be put in a new cluster. The procedure \emph{``compare\_and\_join''} at the 5th line of Algorithm \ref{alg:clustering} is complicated, so we list it as Algorithm \ref{alg:compare-and-join}.
 
-Algorithm \ref{alg:compare-and-join} primarily accomplishes the following: for each new feature vector $\bm{f}_i$, calculate its distance from each feature vector in each feature cluster. This new feature vector can be clustered into $C$ if the maximum distance from $\bm{f}_i$ to a cluster $C$ is less than a threshold. If $\bm{f}_i$ can belong to multiple clusters at the same time, the one with the smallest distance between $\bm{f}_i$ is the final cluster.
+Algorithm \ref{alg:compare-and-join} primarily accomplishes the following: for each new feature vector $\bm{f}_i$, we calculate its distance from each feature vector in each feature cluster. This new feature vector can be clustered into $C$ if the maximum distance from $\bm{f}_i$ to a cluster $C$ is less than a threshold. 
+If $\bm{f}_i$ can belong to multiple clusters at the same time, the one with the smallest distance between $\bm{f}_i$ is the final cluster.
 
 \Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.6]{figs/fig3.pdf}{Feature clustering procedure. \label{fig:feature-clustering}}
 
@@ -218,7 +227,7 @@ Figure \ref{fig:feature-clustering} shows an example of feature clustering proce
         $F=(f_1,f_2,\ldots,f_N)$: feature set, \\
         $\delta$: distance threshold.
     \ENSURE ~~\\
-        Cluster set $C=\{c_1,c_2,\ldots,c_K\}$
+        $C=\{c_1,c_2,\ldots,c_K\}$: Cluster set.
     \STATE $C \gets \emptyset$
     \STATE $\delta' \gets 1 / \delta$
     \FOR{$i=1,2,\ldots,n$}
@@ -247,7 +256,7 @@ Figure \ref{fig:feature-clustering} shows an example of feature clustering proce
         $\delta'$: Reciprocal of distance threshold,\\
         $C=\{c_1, c_2, \ldots, c_K\}$: Currently existing clusters.
     \ENSURE ~~\\
-        A integer $c_{join}$ which indicate the cluster which $f_i$ can join in.
+        $c_{join}$: A integer which indicate the cluster which $f_i$ can join in.
     \STATE A vector including all maximum values of all existing cluster $\bm{d}_{\max}(C) \gets \emptyset$
     \FOR{$k=1,2,\ldots,K$}
         \STATE Distance vector for cluster $c_k$, i.e.$\bm{d}(c_k) \gets \emptyset$
@@ -277,7 +286,7 @@ After the clusters are generated, next step is to find the center of these clust
         $D=(\bm{x}_1,\bm{x}_2,\ldots,\bm{x}_M)^\text{T}$: Data set, \\
         $C=\{c_1, c_2, \ldots, c_K\}$: Cluster set calculated in Algorithm \ref{alg:clustering}
     \ENSURE ~~\\
-        A feature list $F'=\{f'_1, f'_2, \ldots, f'_K\}$ whose features are the center of every cluster.
+        $F'=\{f'_1, f'_2, \ldots, f'_K\}$: A feature list whose features are the center of every cluster.
     \STATE Feature list $f'=\emptyset$
     \FOR{$i=1,2,\ldots, K$}
         \IF{sizeof($c_i$) = 1}
@@ -300,12 +309,12 @@ After the clusters are generated, next step is to find the center of these clust
 
 \subsection{Phase 2: Feature Ranking}
 
-After clustering all features, we generate a group of features which are pairwise independent. In order to further refine the feature space of our data, we choose those have better classification ability. The measure of feature classification ability is the information gain.
+After clustering all features, we generate a group of features which are pairwise independent. In order to further refine the feature space of our data, we choose those have better classification ability. The measures of feature classification ability are the information gain and gain ratio.
 
 We select the top $k$ best feature using information gain and information gain ratio simultaneously. The related definitions are listed as follows:
 
-\begin{defn}[Entropy of data set]
-    Entropy\cite{Shannon1948} is the measure of uncertainty of a random variable. In the context of our paper, the entropy of data set is defined as the entropy of labels. If the probability of label $L$ picking value $l_i$ equals to $P(L=l_i)=p_i$, the entropy of data set is denoted as
+\begin{defn}[Information entropy of data set]
+    Information entropy\cite{Shannon1948} is the measure of uncertainty of a random variable. In the context of our paper, the entropy of data set is defined as the entropy of labels. If the probability of label $L$ picking value $l_i$ equals to $P(L=l_i)=p_i$, the entropy of data set is denoted as
 \begin{equation}
     H(D) = -\sum_{i=0}^N p_i \log_2 p_i
 \end{equation}
@@ -332,7 +341,7 @@ The information gain indicates the degree to which the uncertainty of the inform
 Obviously, for data set $D$ the information gain is determined by its features. Different features have different information gain. If a feature has greater information gain, it has stronger ability to classify the data.
 
 \begin{defn}[Information gain ratio]
-The problem of using information gain is that it tend to choose the feature which has larger value range. In order to eliminate this effect, the information gain ratio is introduced. It is defined as the information gain divided by entropy of the feature.
+The problem of using information gain is that it tend to choose the features whose value range is large. In order to eliminate this effect, the information gain ratio is introduced. It is defined as the information gain divided by entropy of the feature.
 \begin{equation}
     IGR(D, f) = \frac{IG(D, f)}{H(f)}
 \end{equation}
@@ -345,7 +354,7 @@ The problem of using information gain is that it tend to choose the feature whic
         \REQUIRE ~~\\
             $D'$: Data set with clustered features calculated in Algorithm \ref{alg:clustering} and Algorithm \ref{alg:find-cluster-center}
         \ENSURE ~~\\
-            A feature list $F''=\{f''_1, f''_2, \ldots, f''_k\}$ whose  features are top $k$ after ranked.
+            $F''=\{f''_1, f''_2, \ldots, f''_k\}$: A feature list whose features are top $k$ after ranked.
         \STATE Calculate the entropy $H(D')$ by its labels.
         \FOR{$i=1,2,\ldots, K$}
             \STATE Calculate the conditional entropy $H(D'|f_i)$.
@@ -353,7 +362,7 @@ The problem of using information gain is that it tend to choose the feature whic
             \STATE Calculate the information gain ratio
             $$IGR_{f_i} = IG_{f_i}/H(f_i)$$
         \ENDFOR
-        \STATE Calculate the average information gain $\overline{IG}=(\sum IG)/K$
+        \STATE Calculate the average information gain \newline $\overline{IG}=(\sum IG)/K$
         \STATE Choose the features $F_{IG}=\{f|IG_{f} > \overline{IG}\}$
         \STATE Sort the features according to $IGR$
         \RETURN $F''$
@@ -387,26 +396,26 @@ Table \ref{tab:datasets} provides a summary of the datasets, where \emph{n\_samp
 In Kyoto2006+ dataset, we randomly choose 40000 samples in the full dataset in 2015 Jan. 
 To evaluate the generalization of our mechanism, we split 20\% of Kyoto2006+ and CIC-IDS-2018 respectively as test sets, while the other 2 dataset have their own test sets.
 
-Note that \emph{n\_classes} of NSL-KDD is 5(23) in trainning set and 5(38) in test set, because this data set have 5 types of class labels including Normal, DoS, Probe, U2R and R2L. The number in bracket is the total number of sub types of class labels.
+Note that \#classes of NSL-KDD is 5(23) in trainning set and 5(38) in test set, because this data set have 5 types of class labels including Normal, DoS, Probe, U2R and R2L. The number in bracket is the total number of sub types of class labels.
 
-\begin{table*}[!htbp]
+\begin{table}[!htbp]
     \centering
     \caption{Datasets Description}
         \begin{tabular}{lrrrr}
         \toprule
-        Data Set                    & n\_samples & n\_features & n\_classes & File size(MB) \\
+        Data Set                    & \#samples & \#features & \#classes & File size(MB) \\
         \midrule
-        NSL-KDD\cite{nsl-kdd} (Train)            & 125,973    & 41    & 5(23) & 18.2      \\
-        NSL-KDD (Test)                           & 22,544     & 41    & 5(38) & 3.28      \\
-        Kyoto2006+\cite{kyoto2006} (2015 Jan)    & 7,225,298   & 24    & 2     & 2037.8    \\
-        Kyoto2006+ (Randomly Chosen)             & 40,000     & 24    & 2     & 7.06      \\
-        UNSW-NB15\cite{UNSWNB2015} (Train)       & 82,332     & 43    & 10    & 14.6      \\
-        UNSW-NB15 (Test)                         & 175,341    & 43    & 10    & 30.7      \\
-        CIC-IDS-2018\cite{CIC-IDS-2018}         & 32,275,300  & 76    & 15    & 12390.4   \\
+        \cite{nsl-kdd}(Train)            & 125,973    & 41    & 5(23) & 18.2      \\
+        \cite{nsl-kdd}(Test)                           & 22,544     & 41    & 5(38) & 3.28      \\
+        \cite{kyoto2006}(2015 Jan)    & 7,225,298   & 24    & 2     & 2037.8    \\
+        \cite{kyoto2006}(Chosen)             & 40,000     & 24    & 2     & 7.06      \\
+        \cite{UNSWNB2015}(Train)       & 82,332     & 43    & 10    & 14.6      \\
+        \cite{UNSWNB2015}(Test)                         & 175,341    & 43    & 10    & 30.7      \\
+        \cite{CIC-IDS-2018}         & 32,275,300  & 76    & 15    & 12390.4   \\
         \bottomrule
         \end{tabular}%
     \label{tab:datasets}%
-\end{table*}%
+\end{table}%
 
 \subsection{Experiment Setup}
 
@@ -420,10 +429,10 @@ Figure \ref{fig:feature-reduction-rate} shows the feature reduction rate of diff
 
 \begin{table*}[htbp]
     \centering
-    \caption{Clustering rate under different distance thresholds.}
+    \caption{Feautre clustering rate under different distance thresholds.}
     \begin{tabular}{lrrrrrrrr}
         \toprule
-        dataset & $\delta'=0.6$ & 0.65 & 0.7 & 0.75 & 0.8 & 0.85 & 0.9 & 0.95 \\
+        dataset & $\delta'=0.60$ & $0.65$ & $0.70$ & $0.75$ & $0.80$ & $0.85$ & $0.90$ & $0.95$ \\
         \midrule
         NSL-KDD & 40/63 & 42/63 & 42/63 & 45/63 & 48/63 & 51/63 & 53/63 & 54/63 \\
         kyoto2006+ & 23/36 & 24/36 & 25/36 & 26/36 & 30/36 & 30/36 & 32/36 & 33/36 \\
@@ -436,7 +445,6 @@ Figure \ref{fig:feature-reduction-rate} shows the feature reduction rate of diff
 
 
 \Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.35]{figs/feature-reduction-rate.pdf}{Feature reduction rate with different distance threshold $\delta$. \label{fig:feature-reduction-rate}}
-
 
 \subsection{Comparison with different feature selection methods}
 
