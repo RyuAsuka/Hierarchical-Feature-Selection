@@ -12,6 +12,8 @@
 \usepackage{color}
 \usepackage{rotfloat}
 \usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{float}
 \usepackage[para]{threeparttable}
 \renewcommand{\algorithmicrequire}{\textbf{Input:}}
 \renewcommand{\algorithmicensure}{\textbf{Output:}}
@@ -33,7 +35,7 @@
 \history{Date of publication xxxx 00, 0000, date of current version xxxx 00, 0000.}
 \doi{10.1109/ACCESS.2017.DOI}
 
-\title{Efficient Network Anomaly Detection Using Selective Features}
+\title{CBFS: A Clustering-Based Feature Selection Mechanism for Network Anomaly Detection}
 \author{
     \uppercase{Jiewen Mao},
     \uppercase{Yongquan Hu},
@@ -42,193 +44,148 @@
 \address{School of Computer Science and Technology, East China Normal University, Shanghai 200062, China}
 
 \markboth
-{J. Mao \headeretal: Efficient Network Anomaly Detection Using Selective Features}
-{J. Mao \headeretal: Efficient Network Anomaly Detection Using Selective Features}
+{J. Mao \headeretal: CBFS: A Clustering-Based Feature Selection Mechanism for Network Anomaly Detection}
+{J. Mao \headeretal: CBFS: A Clustering-Based Feature Selection Mechanism for Network Anomaly Detection}
 
 \corresp{Corresponding author: Tongquan Wei (e-mail: tqwei@cs.ecnu.edu.cn).}
 
 \begin{abstract}
-    Network traffic anomaly detection has become a necessity due to proliferation of information technologies across safety critical applications. 
-    However, conventional traffic anomaly detection mechanisms primarily rely on traffic data either with only headers of packets, which makes the accuracy depressed, or with very high dimension, whose cost of high accuracy is lower efficiency. 
-    In this paper, we propose an efficient network anomaly detection mechanism by selecting essential features that can quickly detect multiple types of anomalies without compromising the detection accuracy.
-    The proposed scheme selects key features by clustering and ranking all variables, and classifies network traffic to detect anomalies based on selected features.
-    Experimental results show that the proposed scheme can reduce the training time from about 300 seconds to about 200 seconds, and improves various classification metrics by up to 2\% on CIC-IDS-2018 data set.  
-    It also can improve classification metrics by up to 12\% as compared to benchmark method under the condition of the same scale of selected features.
+Network traffic flows contain a large number of correlated and redundant features, which may significantly reduces the performance of data-driven network anomaly detection.
+In this paper, we propose a novel clustering-and-ranking-based feature selection mechanism to reduce redundant features in network traffic, which can greatly improve the efficiency and accuracy of feature-based network anomaly detection. 
+First, our proposed mechanism calculates the distance between feature vectors, merges them into different clusters, and selects the center of each cluster as a representative.
+Second, the proposed mechanism integrates the information gain and gain rate of features to further streamline the number of features on the basis of clustering generation.
+Third, we apply the decision-tree-based classifier to the generated subset of features, and finally detect the abnormal traffic flows.
+The experimental results show that our proposed mechanism is effective in reducing their dimensions across different datasets, with feature reduction rates able to reach 20\% to 70\%. Network anomaly detection can achieve better cost-performace using a subset of features selected by our proposed mechanism. Compared to the benchmark method, our method can improve the cost-performance ratio by up to 70\% or more.
 \end{abstract}
 
 \begin{keywords}
-    feature selection, abnormal detection, feature clustering, correlation coefficient, information gain, decistion tree
+    feature selection, clustering, information gain, classification, decision tree, intrusion detection
 \end{keywords}
 
 \titlepgskip=-15pt
 
 \maketitle
 
+% \tableofcontents
+
 \section{Introduction}
 \label{sec:introduction}
-Network traffic anomaly detection has become a necessity due to proliferation of information technologies across safety critical applications. In recent years, cyber attacks on public information services have become more frequent and have had more serious consequences.
-On March 2015, GitHub faced a massive DDoS attack. The attack lasted for one week and caused significant damages\cite{github-2015}. On October 2016, Dyn's DNS servers was attacked for two hours, during that time, internet users directed to Dyn servers were unable to reach some of the marquee brands of the internet\cite{dyn-2016}. On May 2017, the WannaCry ransomware attack bursted and over 200,000 compromised computers across 150 countries were influenced by this virus and economic losses from the cyber attack could reach up to 4 billion dollars\cite{wannacry-2017}.
-Therefore, how to quickly detect network anomalies has become a key issue for researchers and enterprises.
 
-Many researchers have proposed various methods to solve the problem of quickly detecting network anomalies.
-Wang et al.\cite{Wang2020CS} proposed a dynamic Multilayer-Perceptron (MLP)-based attack detection method. The feature selection process of their work uses backward selection filter method. This method can remove the features which makes the accuracy of MLP decreasing more than threshold and the remainings are the selected features. Urmila et al.\cite{Urmila2017} proposed a distributed collaboration detection scheme that combines the advantages of anomaly and signature based method by capturing the packet header in real time. Al-Hawawreh\cite{MunaSulieman2017} discussed the SYN flood attack in virtual cloud. Network anomalies are detected based on new features that extracted from TCP/IP header. Alsharafi et al.\cite{Alsharafi2020} investigated a normal profile updating method (NPUM) for enhancing the PHAD based IDS model, which updates normal profile of anomaly IDS using further processing of both the normal and abnormal data identified by anomaly detector. 
-Above methods only use header information of flow packets, while diverse types of network anomalies cannot be distinguish effectively by only using packet headers. The malicious users may construct and send the packets elaborately to escape the detection from intrusion detection systems (IDS). Once these packets pass the prevension and propagate in the network, the target computer or network device will be compromised.
+\PARstart{T}{he} daily network traffic of global users is predicted to more than 200 EB per month \cite{cisco-report} with the development of new technologies such as the Internet of Things and 5G mobile networks. 
+At the same time, the amount of abnormal traffic growth in the network is also increasing. 
+In order to detect abnormal network traffic more efficiently and accurately, machine learning and data mining algorithms are used to extract, analyze, and find the patterns of traffic data, build the models to adapt the data and classify every flow. 
+However, These abnormal flows have the characteristics of both high quantity and high dimension. This may cause problems for classification results, such as over-fitting, high computational cost, and long training time. In order to improve the performance of classifiers, the features with high importance should be selected.
 
-To solve this issue, significant amount of works used more statistical information extracted from aggregated flows with the header information to detect network anomalies. Fernandes et al.\cite{Fernandes2015} used digital signature of network segment using flow analysis to detect abnormal events. According to the results of this work, Ant Colony Optimization takes higher accuracy while PCA takes shorter detection time. All of methods in \cite{Fernandes2015} use data in sFlow format. The authors in \cite{Anwer2018} mentioned that using all features in UNSW-NB15 data set \cite{UNSW-2015} can only reach 76.9\% of accuracy and its execution time is longer than the proposed strategies. A comprehensive survey \cite{Fernandes2019} reviewed a series of machine-learning-based network anomaly detection methods. This survey mentioned that using machine-learning-based methods to learn a large data set can bring high detection rate for acknowledged attacks, but it may cost high resource consumption and may cause over-fitting.  It is clear when more features are used, it will be easier to distinguish between different types of network anomalies, and the accuracy of detection will be higher.
+Generally, feature selection methods contains three types: filter, wrapper and embedded \cite{Maza2018, Cai2018}. Filter approach uses the statistical learning data as a measure to evaluate the attributes independently of classification algorithm\cite{Maza2018}. Hajisalem \emph{et~al.} \cite{Hajisalem2018} use correlation-based feature selection in their proposed IDS method. However it only selects the features related to targets. 
+Wrapper approach uses the classification algorithms to select the best features. It uses accuracy (or area under curve, i.e. AUC) as a feedback to determine the effectiveness of feature subsets. A classical wrapper method is recusive feature elimination (RFE) \cite{RFE2002}. It eliminates features recursively until the classifier performs best on the remaining subset of features. 
+Embedded methods allow the classifier perform training and feature selection simultaneously, and the classifier is allowed to decide the features to use. Typical tree-based classifiers involve the feature selection process, including decision tree (DT) \cite{quinlan2014c4}, random forest (RF)\cite{rf2002}, gradient boosting trees (GBDT) \cite{gbdt2001}, etc. Importances of features can be obtained after the classification is complete.
 
-However, improving the ability of these methods to detect network anomalies will reduce their detection efficiency.
-This will cause the problem of dimensional explosion. Network flows have more than 30 features in the packet header alone. If various derived statistical features are considered, the number of features in each flow will increase significantly. There may also be correlations or derivations between these features. If we use all features for statistical learning, on the one hand, it will reduce the efficiency of anomaly detection, on the other hand, it will make us unable to focus on determining the essential characteristics of network anomalies.
+Existing feature selection methods mainly focus on the relationship between features and labels. 
+However, in network data sets, one feature may have correlations with other features. 
+These correlated features may also be selected by traditional feature selection methods, and the classifier may accept redundant features, which may result in low classifying accuracy. 
+In addition, in theory, the optimal feature subset can be obtained by RFE (i.e. the feature subset that allows the classifier to achieve the highest performance), but in high-dimensional data, the time cost of RFE is unacceptable for practical engineering. 
+Therefore, we need to not only eliminate the redundancy between features, but also find a suitable subset of features within a reasonable time.
 
-In this paper, we propose an efficient network anomaly detection technique. The key of which is a new feature selection process to reduce the number of features of network flow data and maintain high accuracy of the detection model. The main contributions of this paper are as follows:
+In this paper, we propose a novel clustering-based feature selection mechanism for network anomaly detection.
+The major contributions of this paper are summarized as folows:
 
 \begin{itemize}
-    \item This paper proposes a new feature selection algorithm using clustering and ranking techniques. Feature clustering algorithms are based on Pearson correlation coefficients and combine features with potential correlations into the same cluster. Feature ranking algorithm uses both information gain and gain ratio. These two algorithms can identify key features in network traffic data.
-    \item This paper builds a network traffic anomaly detection model based on a decision tree classifier. Based on the key features of the model, the C4.5 decision tree classifier is used to more quickly generate a decision tree of a specified size, so that the model can detect network traffic anomalies faster while ensuring the accuracy of the detection.
-    \item Experiments show that on the CIC-IDS-2018 dataset, our proposed method can reduce the training time by about 100 seconds and improve various classification metrics by up to 2\%. To compare with the benchmark selection methods, under the condition of the same scale of selected features, our method can improve these classification metrics by up to 12\%.
+    \item We propose a new feature clustering algorithm based on the defined ``distance'', which merges all correlated features in clusters and finds the cluster centers as their representative.
+    \item We propose a feature ranking algorithm which sorts cluster centers by considering information gain and gain ratio comprehensively. It can further refine the target feature subset. 
+    \item We use the cost-performance as the metrics, and compare our method with mainstream feature selection methods on different network intrusion detection data sets to verify its effectiveness. The experiment results shows that our method could reach better cost-performance.
+    %
 \end{itemize}
 
-The remaining parts of the paper are organized as follows: Section \ref{sec:related} describes related works. Section \ref{sec:problem} describes the formalization of feature selection problem. Section \ref{sec:methods} introduces proposed feature clustering and ranking scheme, then explain the building of detection model and the difference between proposed scheme and dimensional reduction methods. Section \ref{sec:evaluation} shows the experiment results and the correlated discussions. Finally Section \ref{sec:conclusion} concludes this paper and indicates future works.
+The paper is structed as follows: In Section \ref{sec:related-work} we review related works in the field of feature selection. In Section \ref{sec:method} we describe the proposed mechanism in detail. In Section \ref{sec:analysis} we discuss the complexity of our algorithm and compare our method with PCA. Section \ref{sec:experiments} shows the experimental results and relative discussions. Finally Section \ref{sec:conclusion} concludes the paper and give out future works to do.
 
-\section{Related Works}
-\label{sec:related}
+\section{Related Work}
+\label{sec:related-work}
 
-In past several years, researchers have proposed a large amount of network anomaly detection schemes. All of them take feature selection techniques into account to reduce the superfluous traffic features. 
+As mentioned above, the feature selection method can be divided into three categories: filter, wrapper and embedded according to whether classifier paticipates in. 
+At the same time, the ensemble or hybrid methods integrate the characteristics of multiple feature selection methods, and it is also very popular in recent years. 
+According to whether category labels are involved, feature selection methods can also be divided into supervised / unsupervised categories.
 
-A series of researches \cite{Bajaj2013, Wahba2015, Kumar2016, Kuar2018, Cavusoglu2019} considered using information theory and statistical correlations between features of traffic data. 
-Bajaj et al.\cite{Bajaj2013} proposed a method for feature selection using information gain, information gain ratio, and correlation coefficients, and compared accuracy of these three feature selection methods when applied to machine learning algorithms such as Naive Bayes, decision tree, and support vector machine. However, this work did not comprehensively use these three feature selection methods, but applied them independently. In addition, the data set used in this work is the NSL-KDD data set, which is a fairly old data set. The types of network attacks contained in it are outdated and are not suitable for the current network environment.
-Wahba et al.\cite{Wahba2015} proposed a hybrid feature selection method, which is also based on the correlation between features and information gain. The author uses greedy search algorithm to select 10 features to form a new feature set, then uses Adaboost algorithm combined with information gain to find the best feature. The highest F-measure was achieved by using this method, on the NSL-KDD dataset. On the one hand, this method does not take into account the impact of the imbalanced distribution of classes on the detection algorithm. On the other hand, the method does not perform well in detecting U2R and R2L attacks.
-Next, Kumar et al.\cite{Kumar2016} also used correlation coefficients, information gains, and information gain ratios for feature selection. The author calculates and ranks the correlation coefficients of each feature and class labels to find the feature combination with the greatest conditional probability. Compared with the Naive Bayes method, this method greatly improves the accuracy, and reduces the detection time compared to the decision tree algorithm. However, this method only considers the correlation between each feature and the class labels, while the correlation between features are not considered. Moreover, compared with decision trees, their method has no advantages in terms of accuracy and false alarm rate.
-The authors of \cite{Kuar2018} used information gain and Gini covariance as feature selection methods. It finally selected 26 features from the KDD CUP 99 dataset. However, on the one hand, the method uses a deprecated data set. On the other hand, the method performs poorly when detecting U2R-type attacks.
-The literature \cite{Cavusoglu2019} adopted the feature subset selection method based on correlation and wrapper method to reduce 41 features to 25 in the NSL-KDD dataset. In this work, the data set is divided into three subsets according to the protocol type, which are respectively applied to CfsSubsetEval and WrapperSubsetEval procedures. Then the results of these two procedures are combined to obtain a new feature subset. In our opinion, it is not a good practice to group actual network traffic by protocol type, which will lead to overfitting of the model.
+Table \ref{tab:related-works} summarizes related works we investigated. It lists their feature selection methods, detailed approaches and whether they belong to supervised or unsupervised methods.
 
-Except information theory-based methods, there are also other feature selection techniques \cite{Beulah2015, Ferriyan2017, Dong2017} used for network traffic classification or anomaly detection. 
-The literature \cite{Beulah2015} studied the problem of reducing false alarm detection rate through feature selection. This work proposes Simple Hybrid Feature Selection (SHFS). The author uses a combination of multiple feature selection methods to generate the feature subset with the most occurrences, then uses these features for multiple classifiers for comparison. Experimental results show that the proposed method effectively reduces the false alarm rate and has a small improvement on other classification metrics. However, this method is simply a hybrid of several existing feature selection methods, and these feature selection methods have not been properly composed.
-Genetic-Algorithm-based feature selection \cite{Ferriyan2017} finds the optimal features from NSL-KDD data set, which use one-point crossover for the Genetic Algorithm parameters instead of two-point crossover. The results show the proposed approach performs better in classification rate and the training time compared to several other classifiers. 
-Dong et al.\cite{Dong2017} studied Internet video traffic data and used a hierarchical method to classify these data. The literature uses a consistency-based method and data mining algorithms for feature selection. In a real network environment, this method can better classify Internet video data and reduce the time overhead. However, the algorithm has high complexity and is slightly weaker than traditional methods in recall rate.
-
-In addition, two other recent literatures have adopted other machine learning methods for feature selection. 
-Shi et al.\cite{Shi2017} proposed a novel feature extraction and selection approach to provide the optimal and robust features for traffic classification, which based on multifractal features, the observation of the multifractal features and the analysis of PCA-based feature selection. The results show the approach achieves better classification performance, lower runtime performance and more effective for real-time traffic classification compared to the TLS features. 
-Moreover, the authors then propose a new feature optimization approach based on deep learning and Feature Selection (FS) techniques\cite{Shi2018} to provide the optimal and robust features for traffic data sets. The results show the approach achieves the best classification performance and relatively higher runtime performance compared with the approaches used in the previous work.
-
-In summary, we need a method that is able to organically compose various feature selection methods and detect anomalies in new network traffic data.
-
-
-\section{Problem Definition and Solution}
-\label{sec:problem}
-
-We denote
-$$
-    D=\left(
-        \begin{array}{llll}
-            \bm{x}_1 & \bm{x}_2 & \ldots & \bm{x}_m
-        \end{array}
-    \right)^T
-$$
-as the data set with $m$ instances, where
-$$
-    \bm{x}_i = \left(
-        \begin{array}{lllll}
-            f_{1i} & f_{2i} & \ldots & f_{ni} & c_i
-        \end{array}
-    \right)
-$$
-where $f_{ji}$ is the value of $j$th feautre of vector $\bm{x_i}$, and $f_j \in F = \{f_1, f_2, \ldots, f_n\}$ is the feature set. $c_i$ is the class label of $\bm{x}_i$ and $c_i \in C = \{c_1, c_2, \ldots, c_k\}$, where $C$ is the set of class labels.
-
-The feature selection problem\cite{Maza2018} can be described as a 6-tuple $FS=\langle D, F, C, S, fs, E \rangle$, where $D, F, C$ are data set, feature set and class label set respectively. $S=\{s_1, s_2, \ldots, s_l\}, \ l=2^n-1$ is the search space, which contains all subsets can be constructed from $F$ with $s_i=\{f_j, f_k, \ldots, f_l\}, \ (1 \leqslant j \neq k \neq l \leqslant n)$. $E$ is the evaluation measure and $fs$ represents the function of process of feature selection: $fs: F \rightarrow S$.
-
-The target of the function $fs$, which is the proposed algorithm, is to find the best feature subset $\hat{F} \subset F$. The feature subset should satisfy following conditions:
-\begin{itemize}
-    \item Every feature $f \in \hat{F}$ is independent with others. It means that every $f$ should not be calculated from other features.
-    \item The feature subset $\hat{F}$ is the least set of $s_l$ with given count of features $l$. This feature subset should has enough information to determine whether a flow is an attack or not. If the feature set add or remove any other features, the result of detection will deteriorate.
-\end{itemize}
-
-The workflow of proposed solution is shown in Figure \ref{fig:framework}.
-The first and the most important part is the feature selection procedure. It contains three parts: At first we prepocess the data set. Then all correlated features are aggregated by proposed feature clustering algorithm. Next, all cluster center features are ranked and sorted by proposed feature ranking algorithm.
-
-After the three-steps processing, the refined data subset is divided into training set and test set, then they are trained and tested via decision tree classifier and finally our detection model is generated. 
-
-\Figure[t](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.6]{fig/Framework.pdf}{The workflow of proposed feature selection scheme.\label{fig:framework}}
-
-\section{Proposed Anomaly Detection Scheme}
-\label{sec:methods}
-
-In this section, we propose our hierarchical feature selection method in turn. We first introduce the source of data set and the preprocessing precedure. Next we explain our feature clustering algorithm and feature ranking algorithm respectively. After that we simply introduce decision tree classifier, which is used as our model-building tools. Finally, we analysis the difference of the theory of our method and dimensionality reduction algorithms like PCA.
-
-\subsection{Preprocessing Dataset}
-
-The data set being studied is CIC-IDS-2018\cite{cic2018}.
-It is generated on a simulated network topology on the AWS computing platform. The network topology is shown as Figure \ref{fig:topology}. It has 5 subnet and 1 attacker network.
-The data set consists of seven different attack scenarios: Brute-force, Heartbleed, Botnet, DoS, DDoS, Web attacks, and infiltration of the network from inside. It includes the captured network traffic and system logs of each machine, along with 76 features extracted from the captured traffic using CICFlowMeter-V3\cite{cicflowmeter}. These 76 features are shown in Table \ref{tab:features}. Their detailed meaning is listed in \cite{cic2018}.
-
-\Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.45]{fig/Topology.pdf}{Simulated network topology on AWS computing platform\label{fig:topology}}
-
-\begin{table*}[!htpb]
-    \caption{76 Features in CIC-IDS-2018 data set}
-    \label{tab:features}
+\begin{table*}[!htbp]
     \centering
-    \begin{tabular}{llll}
-    \toprule
-    \multicolumn{4}{c}{Features in CIC-IDS-2018 data set} \\
-    \midrule
-    Flow Duration & Total Forward Packets & Total Backward Packets & Total Length Forward Packets \\
-    Total Length Backward Packets & Forward Packet Length Max & Forward Packet Length Min & Forward Packet Length Mean \\
-    Forward Packet Length Std & Backward Packet Length Max & Backward Packet Length Min & Backward Packet Length Mean \\
-    Backward Packet Length Std & Flow Bytes/s & Flow Packets/s & Flow IAT Mean \\
-    Flow IAT Std & Flow IAT Max & Flow IAT Min & Forward IAT Total \\
-    Forward IAT Mean & Forward IAT Std & Forward IAT Max & Forward IAT Min \\
-    Backward IAT Total & Backward IAT Mean & Backward IAT Std & Backward IAT Max \\
-    Backward IAT Min & Forward PSH Flags & Backward PSH Flags & Forward URG Flags \\
-    Backward URG Flags & Forward Header Length & Backward Header Length & Forward Packets/s \\
-    Backward Packets/s & Packet Length Min & Packet Length Max & Packet Length Mean \\
-    Packet Length Std &  Packet Length Var & FIN Flag Count & SYN Flag Count \\
-    RST Flag Count & PSH Flag Count & ACK Flag Count & URG Flag Count \\
-    CWE Flag Count & ECE Flag Count & Down/Up Ratio & Packet Size Avg \\
-    Forward Seg Size Avg & Backward Seg Size Avg & Forward Byts/b Avg & Forward Packets/b Avg \\
-    Forward Blk Rate Avg & Backward Byts/b Avg & Backward Packets/b Avg & Backward Blk Rate Avg \\
-    Subflow Forward Packets & Subflow Forward Byts & Subflow Backward Packets & Subflow Backward Byts \\
-    Init Forward Win Byts &  Init Backward Win Byts &   Forward Act Data Packets & Forward Seg Size Min \\
-    Active Mean & Active Std & Active Max & Active Min \\
-    Idle Mean & Idle Std & Idle Max & Idle Min \\
-    \bottomrule
-    \end{tabular}
-\end{table*}
+    \caption{Summary of related works.}
+    %\resizebox{0.5\textwidth}{!}{
+        \begin{tabular}{p{3em}p{8em}p{20em}p{11em}}
+        \toprule
+        paper & FS methods & Approaches & \tabincell{l}{Supervised/\\Unsupervised} \\
+        \midrule
+        \cite{Saeys2008} & Filter,\newline{}Wrapper & Symmetrical Uncertainty, RELIEF, Random Forest, Linear SVM & Supervised \\
+        \cite{Hsu2010} & Filter & Clustering with Feature-Feature and Feature-Class & Unsupervised \\
+        \cite{Liu2011} & Embedded & Mutual Information, Clustering & Unsupervised \\
+        \cite{Javed2012} & Wrapper & Class-dependent Density-based feature elimination & Supervised \\
+        \cite{Eid2013} & Filter & Correlation Coeffcient, C4.5 Decision Tree & Supervised \\
+        \cite{Singh2015} & Filter,\newline{}Embedded & Filter, Consistency, CFS  & Supervised \\
+        \cite{Wahba2015} & Filter & Correlation Coeffcient, Information Gain & Supervised \\
+        \cite{CANN2015} & Transformation & Distance-based Clustering, KNN & Unsupervised \\
+        \cite{Iglesias2015} & Filter,\newline{}Wrapper & Correlation, RFE & Supervised \\
+        \cite{Osanaiye2016} & Filter & Ensemble techniques of Information Gain, Gain Ratio, Chi2 Test and ReliefF & Supervised \\
+        \cite{Bostani2017} & Filter,\newline{}Wrapper & Binary gravitational search algorithm, mutual information & Supervised \\
+        \cite{Brahim2018} & Wrapper & Ensemble of Weighted mean aggregation, Complete linear aggregation, Robust rank aggregate, feture occurrence frequency, classification accuracy & Supervised \\
+        \cite{CorrCorr2019} & Filter & Addition-based Correlation & Supervised \\
+        \cite{Selvakumar2019} & Filter,\newline{}Wrapper & Mutual information, C4.5 Decision Tree & Supervised \\
+        \bottomrule
+        \end{tabular}%}
+    \label{tab:related-works}%
+\end{table*}%
 
-In order to detect all types of attacks as much as possible, we integrated the network traffic data that was originally scattered in each day, and extracted 20\% of the data as our main data set while maintaining the label ratio. At the same time, in order to ensure the generalization ability of the model, we randomly select and generate data sets as many times as possible. Finally we get 10 stratified-sampled data set files.
+Important traditional feature selection methods are summarized as follows. 
+Javed \emph{et~al.} \cite{Javed2012} proposed class-dependent density-based feature elimination (CDFE). This is a wrapper method. It eliminate features with high redundancy by naive bayesian and kernel ridge regression. However, the complexity of this method is high, which may affect the efficiency of the feature selector.
+Eid \emph{et~al.} \cite{Eid2013} proposed a correlation coefficient-based feature selection method. It also calculate correlation coefficient between feature-feature and feature-class. However, the effect of preprocessing methods is not considered, which may affect the generation of feature subset. 
+Gottwalt \emph{et~al.} \cite{CorrCorr2019} uses addition-based correlation to calculate the sum of each two features in normalized data set to generate a correlation matrix. This process requires too much calculation, and each data needs to generate a $m \times m$ matrix. In high-dimensional data sets, it may not be suitable for particularly large $n$ and $m$.
+Selvakumar \emph{et~al.} \cite{Selvakumar2019} proposed a feature selection method combined filter and wrapper methods. The filter method uses mutual information to reduce features not related with class labels. The wrapper method searches best feature subset, evaluates the subset on C4.5 decision tree model and finally generate reduced feature vectors. 
 
-At this moment, the data set is still unavailable because there are some useless nominal features which are not suitable for statistical analyzing, and there may be missing values in the data set. We must remove these features to prevent them interfering proposed algorithms. Our preprocessing strategy is described as follows:
+\Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[width=0.7\textwidth]{./figs/fig1-2.pdf}
+{Overview of CBFS. \label{fig:overview}}
 
-\subsubsection{Data cleaning}
-The target of feature selection procedure is to find the decisive statistical features which can precisely distinguish different attack typs.
-So the traditional 5-tuple, i.e. source IP address, source port, destination IP address, destination port and protocol cannot be used to our algorithm.
-These nominal features will be removed so that we can focus on other statistical features.
-We also remove timestamp feature because our algorithm focuses on the type of attacks rather than the time characteristics.
+In addition to above supervised feature selection methods, unsupervised methods, especially clustering techniques are also used for feature set reduction. 
+Hsu \emph{et~al.} \cite{Hsu2010} also use correlation coefficient to cluster similar features. The main idea of this work contains two steps. At first the method cluster similar features by correlation coefficient, then choose all features in every cluster which have the largest correlation with class labels. 
+Liu \emph{et~al.} \cite{Liu2011} proposed a hierarchical clustering feature selection algorithm. This work uses clustering as a supervised way. It regards the class labels as a special cluster, uses mutual information as distance of intra-clusters and information gain as distance of inter-clusters. Although this work takes higher performance, it has higher time complexity. 
+Lin \emph{et~al.} \cite {CANN2015} proposed a cluster center algorithm using data samples to find the distance between each data sample and its cluster center and the distance between each data sample's nearest neighbor in the same cluster. We apply the same idea to feature vectors and clustering in the feature vector space to achieve a similar effect to sample vectors.
 
-Many missing values also exist in the data set. There are many reasons for missing values. Some flows cannot be calculated in certain features. For example, if the duration time of a flow is too small even equals 0, the values of two features named ``Flow Bytes/s'' and ``Flow Packets/s'' can be NaN or infinity. It is a difficult work to examine every missing value, and they cannot be filled using interpolation because the data set is composed randomly. In this situation, we remove these rows containing missing values to ensure our algorithm running normally.
+Ensemble methods is a popular technique used in machine learning solutions, which uses results from multiple learners and classification performance is improved. Similar solutions are also applied in feature selection. 
+Saeys \emph{et~al.} \cite{Saeys2008} chooses ensemble for four FS methods: Symmetrical Uncertainty, RELIEF, Random Forest and Linear SVM. The algorithm collects their results and votes to final feature subset.
+Singh \emph{et~al.} \cite{Singh2015} uses ensemble of filter, consistency and CFS methods to select features. However, the size of feature subset is larger than other selection methods.
+Wahba \emph{et~al.} \cite{Wahba2015} also ensembles correlation coefficient and information gain. It uses AdaBoost of Naive Bayes to classify data points. 
+Osanaiye \emph{et~al.} \cite{Osanaiye2016} Proposed an integrated multi-filter feature selection method, which combined information gain, information gain rate, chi-square test and ReliefF to select features comprehensively. It is effective to integrate the effectiveness of various filters.
 
-Note that the removed features are only in the context of this paper. These features may be useful in other detection methods.
 
-\subsubsection{Remove all zero-variance features}
 
-Variance is used to describe the discreteness of a variable. In a data set, if the variance of a feature is zero, it means that this feature has only one value. Thus this feature cannot import any new information to help training the model. We remove these features to refine the data set.
+In addition to the comments in Table \ref{tab:related-works} and the works summarized above, a common problem is that their data sets are basically KDD CUP 99 and its derived data set NSL-KDD. This data set is quite old and cannot reflect the latest cyber attacks. Therefore, it is necessary to use the latest network attack detection data set. In addition to these classic data sets, our research will use the latest data sets to validate our method.
 
-\subsubsection{Encode labels}
 
-Most anomaly detection models perform as classifiers which predict output labels by calculating the probabilities of every label in the label set. The models use input data to train a function. Both input data and output data are often numeric. However in our data set, the labels are text which cannot be processed by detection model. Thus we encoder the labels and map them to numeric values.
 
-\subsection{Feature Clustering Based on Pearson Correlation Coefficient}
+\section{Clustering-based feature selection mechanism}
+\label{sec:method}
 
-According to our observation, many features are potentially linearly related. For example, in Figure \ref{fig:correlated-variables}, we pick up two pairs of features to show their potential linear correlation. The left part shows that features ``Flow IAT Mean'' and ``Forward IAT Mean'' may have positive correlation. In fact the interval time of a whole flow consists of the forward flow. In the right part, we can see that the feature ``Backward Segment Size Average'' is almost equals to ``Backward Packet Length Mean''. We can treat them as the same feature.
+In this section, the proposed clustering-based feature selection mechanism is described in detail. Figure \ref{fig:overview} shows the main framework of proposed CBFS mechanism. Firstly the training data set is preprocessed. Then it is transmit into proposed CBFS mechanism, which are composed of two phases: feature clustering and feature ranking. After feature selection process, we use decision tree-based classifier to validate the performance of our proposed mechanism.
 
-The redundancy of features is produced by the featrue extraction tool. If we use the whole data set to train our model, the redundant features on one hand may increase the computation and spend more time, on the other hand these redundant features cannot import any new informations into our model. So it is necessary to merge these redundant features. In this paper, we use clustering method to reach this target.
+\subsection{Phase 0: Preprocessing}
 
-First the concept of correlation coefficient is reviewed.
+\Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.6]{figs/fig2.pdf}{Data preprocessing. \label{fig:preprocessing}}
 
-\begin{figure}
-    \centering
-    \includegraphics[scale=0.5]{fig/scatter-correlated-variables.png}
-    \caption{Two examples of correlated variables. The feature ``Flow IAT Mean'' and ``Forward IAT Mean'', ``Backward Segment Size Average'' and ``Backward Packet Length Mean'' are potentially related. }
-    \label{fig:correlated-variables}
-\end{figure}
+Figure \ref{fig:preprocessing} shows the preprocessing procedure. The network traffic data set is extracted from real network traffic, so there may be some abnormal data (marked as ``NaN'' in the data set). The first step of preprocessing is to clean up these abnormal data. There are three kinds of features in the network dataset: nominal, binary and numerical. 
+We use One-Hot encoding to convert the nominal features to a sparse matrix. 
+In this process, We sort the number of occurrences of every nominal features and combined those with too few occurrences, which effectively reduced the number of new features actually generated. 
+To discretize numerical data, we use the discretizer proposed in \cite{Mazumder2012}. 
+In addition, we eliminate features with low variance. The value range of these features is too small, which is not conducive to our feature selection algorithm.
+
+\subsection{Phase 1: Feature Clustering}
+
+In this phase, we use clustering method to reduce the dimensions of feature space. 
+We merge all features with high correlation into the same cluster.
+The redundancy of features is produced by the featrue extraction tools. 
+If we use the whole data set to train our model, the redundant features on one hand may increase the computation and spend more time, on the other hand, these redundant features cannot import any new informations into our model. 
+So it is necessary to merge these redundant features. 
+
+\subsubsection{Definition of ``distance'' between features}
+
+First the concept of correlation coefficient is reviewed. Then we use correlation coefficient to define ``distance'' between any two feature vectors. 
 
 \begin{defn}[Correlation Coefficient]
     If the variances $\sigma^2_X$ and $\sigma_Y^2$ of two random variables $X$ and $Y$ exists and they satisfy that $\sigma^2_X > 0$ and $\sigma^2_Y > 0$, the correlation coefficient of $X$ and $Y$ can be denoted as
@@ -244,118 +201,129 @@ First the concept of correlation coefficient is reviewed.
     \end{cases}$$
 \end{defn}
 
-Then we use the correlation coefficient to define the distance of any two features.
-
 \begin{defn}[The distance of two features]
-\label{def:distance}
-The distance of two features $f_i$ and $f_j$ is the reciprocal of the absolute value of correlation coefficient of them, that is
-\begin{equation}
-    \label{eq:distance}
-    d(f_i, f_j) = \frac{1}{|\text{Corr}(f_i, f_j)|}
-\end{equation}
-\end{defn}
+    \label{def:distance}
+    The distance of two feature vectors $\bm{f_i}$ and $\bm{f_j}$ is the reciprocal of the absolute value of correlation coefficient of them, that is
+    \begin{equation}
+        \label{eq:distance}
+        d(\bm{f_i}, \bm{f_j}) = \frac{1}{|\text{Corr}(\bm{f_i}, \bm{f_j})|}-1
+    \end{equation}
+    \end{defn}
 
-According to Equation \ref{eq:distance}, if two features have potential linear correlation, the distance between them is small. On the contrary, if the distance between two features are large, these two features are independent relatively. Here we consider both positive correlation and negative correlation are the same, so we use absolute value of the correlation coefficient. However, the more indepent two features are, the less absolute correlation coefficient of them is. This is the exact opposite of our general definition of distance. Hence we use reciprocal to solve this problem.
+Here we minus one from reciprocal of absolute of correlation coefficient is to limit the range of distance in $[0, +\infty)$. Note that the ``distance'' we define is a kind of generalized distance, since this distance satisfies non-negativity and symmetry, it does not satisfy triangle inequality. 
 
-The clustering algorithm is described as Algorithm \ref{alg:clustering} and Algorithm \ref{alg:compare-and-join}. We calculate the distance between every feature and others. If the distance is less than a threshold $\delta$, the feature is treated as linear related with the other and they belong to the same cluster. Otherwise, the feature will be put in a new cluster. The procedure ``compare\_and\_join'' at the 4th line of Algorithm \ref{alg:clustering} is complicated, so we list it as Algorithm \ref{alg:compare-and-join}.
+\subsubsection{Clustering Algorithms}
+
+The clustering algorithm is described as Algorithm \ref{alg:clustering} and Algorithm \ref{alg:compare-and-join}.
+According to Equation \ref{eq:distance}, if two features have potential linear correlation, the distance between them is small. On the contrary, if the distance between two features are large, these two features are independent relatively. Here we consider both positive and negative correlation are the same, so we use absolute value of the correlation coefficient. 
+In order to facilitate the actual calculation, we use reciprocal to solve this problem. We use $\delta' = 1/\delta$ here, so that we limit the threshold to the range $[0,1]$.
+
+We calculate the distance between every two features. If the distance is less than a threshold $\delta$, the feature is treated as linear related with the other and they belong to the same cluster. Otherwise, the feature will be put in a new cluster. The procedure \emph{``compare\_and\_join''} at the 5th line of Algorithm \ref{alg:clustering} is complicated, so we list it as Algorithm \ref{alg:compare-and-join}.
+
+Algorithm \ref{alg:compare-and-join} primarily accomplishes the following: for each new feature vector $\bm{f}_i$, we calculate its distance from each feature vector in each feature cluster. This new feature vector can be clustered into $C$ if the maximum distance from $\bm{f}_i$ to a cluster $C$ is less than a threshold. 
+If $\bm{f}_i$ can belong to multiple clusters at the same time, the one with the smallest distance between $\bm{f}_i$ is the final cluster.
+
+\Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.6]{figs/fig3.pdf}{Feature clustering procedure. \label{fig:feature-clustering}}
+
+Figure \ref{fig:feature-clustering} shows an example of feature clustering procedure. In this example, the distance between $\bm{f}_1$ and $\bm{f}_2$ is shorter than threshold $\delta$, as well as $\bm{f}_3$ and $\bm{f}_n$, therefore these features can be clustered together. We traverse all feature vectors in the feature vector space and repeat this procedure. Due to the symmetry of the distance, we can cluster all feature vectors whose distance is less than the threshold into the same class. 
 
 \begin{algorithm}
-\caption{Feature clustering based on Pearson correlation coefficient}
-\label{alg:clustering}
-\begin{algorithmic}[1]
-\REQUIRE ~~\\
-    Data set $D=(\bm{x}_1,\bm{x}_2,\ldots,\bm{x}_M)^\text{T}$, \\
-    feature set $F=(f_1,f_2,\ldots,f_N)$, \\
-    distance threshold $\delta$.
-\ENSURE ~~\\
-    Cluster set $C=\{c_1,c_2,\ldots,c_K\}$
-\STATE $C \gets \emptyset$
-\FOR{$i=1,2,\ldots,n$}
-    \IF{$\nexists c \in C\ \text{s.t.} f_i \in c$}
-        \STATE cluster $c_{join} \gets \text{compare\_and\_join}(D, f_i, C, \delta)$
-        \IF{$\exists c_{join}$ which $f_i$ can join}
-            \STATE $c_{join}\text{.add}(f_i)$
-        \ELSE
-            \STATE Create a new cluster $c'$
-            \STATE $c'\text{.add}(f_i)$
-            \STATE $C\text{.add}(c')$
+    \caption{Feature clustering based on Pearson correlation coefficient}
+    \label{alg:clustering}
+    \begin{algorithmic}[1]
+    \REQUIRE ~~\\
+        $D=(\bm{x}_1,\bm{x}_2,\ldots,\bm{x}_M)^\text{T}$: Data set, \\
+        $F=(f_1,f_2,\ldots,f_N)$: feature set, \\
+        $\delta$: distance threshold.
+    \ENSURE ~~\\
+        $C=\{c_1,c_2,\ldots,c_K\}$: Cluster set.
+    \STATE $C \gets \emptyset$
+    \STATE $\delta' \gets 1 / \delta$
+    \FOR{$i=1,2,\ldots,n$}
+        \IF{$\nexists c \in C\ \text{s.t.} f_i \in c$}
+            \STATE cluster $c_{join} \gets \text{compare\_and\_join}(D, f_i, C, \delta')$
+            \IF{$\exists c_{join}$ which $f_i$ can join}
+                \STATE $c_{join}\text{.add}(f_i)$
+            \ELSE
+                \STATE Create a new cluster $c'$
+                \STATE $c'\text{.add}(f_i)$
+                \STATE $C\text{.add}(c')$
+            \ENDIF
         \ENDIF
-    \ENDIF
-\ENDFOR
-\RETURN $C$
-\end{algorithmic}
-\end{algorithm}
-
-\begin{algorithm}
-\caption{Compare new feature to all other features}
-\label{alg:compare-and-join}
-\begin{algorithmic}[1]
-\REQUIRE ~~\\
-    Data set $D=(\bm{x}_1,\bm{x}_2,\ldots,\bm{x}_M)^\text{T}$, \\
-    feature $f_i$, \\
-    distance threshold $\delta$,
-    currently existing clusters $C=\{c_1, c_2, \ldots, c_K\}$
-\ENSURE ~~\\
-    A integer $c_{join}$ which indicate the cluster which $f_i$ can join in.
-\STATE A vector including all maximum values of all existing cluster $\bm{d}_{\max}(C) \gets \emptyset$
-\FOR{$k=1,2,\ldots,K$}
-    \STATE Distance vector for cluster $c_k$, i.e.$\bm{d}(c_k) \gets \emptyset$
-    \FOR{$j=1,2,\ldots, \text{sizeof}(c_k)$}
-        \STATE $d=|\text{Corr}(D^{(f_i)}, D^{(f_j)})|$
-        \STATE $\bm{d}(c_k)\text{.add}(d)$
     \ENDFOR
-    \STATE $\bm{d}_{\max}(C)\text{.add}(\max{\bm{d}(c_k)})$
-\ENDFOR
-\STATE Maximum distance in cluster $c_k$ denoted as $d_{\max}=\max{\bm{d}_{\max}(C)}$
-\IF{$d_{\max} > \delta$}
-    \STATE $c_{join}=\arg\max_c{\bm{d}_{\max}(C)}$
-    \RETURN $c_{join}$
-\ELSE
-    \RETURN NULL
-\ENDIF
-\end{algorithmic}
-\end{algorithm}
+    \RETURN $C$
+    \end{algorithmic}
+    \end{algorithm}
 
-Note that in Algorithm \ref{alg:compare-and-join}. We directly use the absolute correlation coefficient instead of complying with the definition of Equation \ref{eq:distance}. This is done because we can limit the range of $\delta$ to $[0,1]$.
+    \begin{algorithm}
+    \caption{Compare new feature to all other features}
+    \label{alg:compare-and-join}
+    \begin{algorithmic}[1]
+    \REQUIRE ~~\\
+        $D=(\bm{x}_1,\bm{x}_2,\ldots,\bm{x}_M)^\text{T}$: Data set, \\
+        $f_i$: The $i$th feature, \\
+        $\delta'$: Reciprocal of distance threshold,\\
+        $C=\{c_1, c_2, \ldots, c_K\}$: Currently existing clusters.
+    \ENSURE ~~\\
+        $c_{join}$: A integer which indicate the cluster which $f_i$ can join in.
+    \STATE A vector including all maximum values of all existing cluster $\bm{d}_{\max}(C) \gets \emptyset$
+    \FOR{$k=1,2,\ldots,K$}
+        \STATE Distance vector for cluster $c_k$, i.e.$\bm{d}(c_k) \gets \emptyset$
+        \FOR{$j=1,2,\ldots, \text{sizeof}(c_k)$}
+            \STATE $d=|\text{Corr}(D^{(f_i)}, D^{(f_j)})|$
+            \STATE $\bm{d}(c_k)\text{.add}(d)$
+        \ENDFOR
+        \STATE $\bm{d}_{\max}(C)\text{.add}(\max{\bm{d}(c_k)})$
+    \ENDFOR
+    \STATE Maximum distance in cluster $c_k$ denoted as $d_{\max}=\max{\bm{d}_{\max}(C)}$
+    \IF{$d_{\max} > \delta'$}
+        \STATE $c_{join}=\arg\max_c{\bm{d}_{\max}(C)}$
+        \RETURN $c_{join}$
+    \ELSE
+        \RETURN NULL
+    \ENDIF
+    \end{algorithmic}
+\end{algorithm}
 
 After the clusters are generated, next step is to find the center of these clusters. This procedure is listed as Algorithm \ref{alg:find-cluster-center}. We calculate the average distance of every feature between others in each cluster, then we pick the feature with minimum average distance with other features as the center of this cluster. If a cluster only have two features, the algorithm will select the first feature in the cluster as the center of it.
 
 \begin{algorithm}
-\caption{Find the cluster center}
-\label{alg:find-cluster-center}
-\begin{algorithmic}[1]
-\REQUIRE ~~\\
-    Data set $D=(\bm{x}_1,\bm{x}_2,\ldots,\bm{x}_M)^\text{T}$, \\
-    clusters $C=\{c_1, c_2, \ldots, c_K\}$ calculated in Algorithm \ref{alg:clustering}
-\ENSURE ~~\\
-    A feature list $F'=\{f'_1, f'_2, \ldots, f'_K\}$ whose features are the center of every cluster.
-\STATE Feature list $f'=\emptyset$
-\FOR{$i=1,2,\ldots, K$}
-    \IF{sizeof($c_i$) = 1}
-        \STATE $F'$.add($f \in c_i$)
-    \ELSIF{sizeof($c_i$) = 2}
-            \STATE select a feature randomly
+    \caption{Find the cluster center}
+    \label{alg:find-cluster-center}
+    \begin{algorithmic}[1]
+    \REQUIRE ~~\\
+        $D=(\bm{x}_1,\bm{x}_2,\ldots,\bm{x}_M)^\text{T}$: Data set, \\
+        $C=\{c_1, c_2, \ldots, c_K\}$: Cluster set calculated in Algorithm \ref{alg:clustering}
+    \ENSURE ~~\\
+        $F'=\{f'_1, f'_2, \ldots, f'_K\}$: A feature list whose features are the center of every cluster.
+    \STATE Feature list $f'=\emptyset$
+    \FOR{$i=1,2,\ldots, K$}
+        \IF{sizeof($c_i$) = 1}
             \STATE $F'$.add($f \in c_i$)
-    \ELSE
-        \FOR{each $f \in c_i$}
-            \STATE $\bar{d_f}=1/(|c_i|-1)\sum d_{f, f'}$
-        \ENDFOR
-        \STATE $f_c=\arg\min_f d_c$
-        \STATE $F'$.add($f_c$)
-    \ENDIF
-\ENDFOR
-\RETURN $F'$
-\end{algorithmic}
+        \ELSIF{sizeof($c_i$) = 2}
+                \STATE $f=c_i[0]$
+                \STATE $F'$.add($f$)
+        \ELSE
+            \FOR{each $f \in c_i$}
+                \STATE $\bar{d_f}=1/(|c_i|-1)\sum d_{f, f'}$
+            \ENDFOR
+            \STATE $f_c=\arg\min_f d_c$
+            \STATE $F'$.add($f_c$)
+        \ENDIF
+    \ENDFOR
+    \RETURN $F'$
+    \end{algorithmic}
 \end{algorithm}
+        
 
-\subsection{Feature Ranking Based on Information Gain and Gain Ratio Simultaneously}
+\subsection{Phase 2: Feature Ranking}
 
-After clustering all features, we generate a group of features which are pairwise independent. In order to further refine the feature space of our data, we choose those have better classification ability. The measure of feature classification ability is the information gain.
+After clustering all features, we generate a group of features which are pairwise independent. In order to further refine the feature space of our data, we choose those have better classification ability. The measures of feature classification ability are the information gain and gain ratio.
 
 We select the top $k$ best feature using information gain and information gain ratio simultaneously. The related definitions are listed as follows:
 
-\begin{defn}[Entropy of data set]
-    Entropy\cite{Shannon1948} is the measure of uncertainty of a random variable. In the context of our paper, the entropy of data set is defined as the entropy of labels. If the probability of label $L$ picking value $l_i$ equals to $P(L=l_i)=p_i$, the entropy of data set is denoted as
+\begin{defn}[Information entropy of data set]
+    Information entropy\cite{Shannon1948} is the measure of uncertainty of a random variable. In the context of our paper, the entropy of data set is defined as the entropy of labels. If the probability of label $L$ picking value $l_i$ equals to $P(L=l_i)=p_i$, the entropy of data set is denoted as
 \begin{equation}
     H(D) = -\sum_{i=0}^N p_i \log_2 p_i
 \end{equation}
@@ -365,7 +333,7 @@ We select the top $k$ best feature using information gain and information gain r
 \begin{defn}[Conditional entropy of data set with given feature]
 The conditional entropy $H(D|f)$ is the uncertainty of data set $D$ under the condition of known feature $f$, which is denoted as
 \begin{align}
-     H(D|f)=-\sum_{j} p(f_j) \sum_{i} p(l_i|f_j) \log_2 p(l_i|f_j)
+    H(D|f)=-\sum_{j} p(f_j) \sum_{i} p(l_i|f_j) \log_2 p(l_i|f_j)
 \end{align}
 where $p(f_j)$ is the probability when feature $f$ takes $f_j$, $p(l_i|f_j)$ is the conditional probability when label $L$ takes $l_i$ under the condition of $f=f_j$.
 \end{defn}
@@ -382,7 +350,7 @@ The information gain indicates the degree to which the uncertainty of the inform
 Obviously, for data set $D$ the information gain is determined by its features. Different features have different information gain. If a feature has greater information gain, it has stronger ability to classify the data.
 
 \begin{defn}[Information gain ratio]
-The problem of using information gain is that it tend to choose the feature which has larger value range. In order to eliminate this effect, the information gain ratio is introduced. It is defined as the information gain divided by entropy of the feature.
+The problem of using information gain is that it tend to choose the features whose value range is large. In order to eliminate this effect, the information gain ratio is introduced. It is defined as the information gain divided by entropy of the feature.
 \begin{equation}
     IGR(D, f) = \frac{IG(D, f)}{H(f)}
 \end{equation}
@@ -393,9 +361,9 @@ The problem of using information gain is that it tend to choose the feature whic
     \label{alg:feature-ranking}
     \begin{algorithmic}[1]
         \REQUIRE ~~\\
-            Data set $D'$ with clustered features calculated in Algorithm \ref{alg:clustering} and Algorithm \ref{alg:find-cluster-center}
+            $D'$: Data set with clustered features calculated in Algorithm \ref{alg:clustering} and Algorithm \ref{alg:find-cluster-center}
         \ENSURE ~~\\
-            A feature list $F''=\{f''_1, f''_2, \ldots, f''_k\}$ whose  features are top $k$ after ranked.
+            $F''=\{f''_1, f''_2, \ldots, f''_k\}$: A feature list whose features are top $k$ after ranked.
         \STATE Calculate the entropy $H(D')$ by its labels.
         \FOR{$i=1,2,\ldots, K$}
             \STATE Calculate the conditional entropy $H(D'|f_i)$.
@@ -403,386 +371,331 @@ The problem of using information gain is that it tend to choose the feature whic
             \STATE Calculate the information gain ratio
             $$IGR_{f_i} = IG_{f_i}/H(f_i)$$
         \ENDFOR
-        \STATE Calculate the average information gain $\bar{IG}=(\sum IG)/K$
-        \STATE Choose the features $F_{IG}=\{f|IG_{f} > \bar{IG}\}$
+        \STATE Calculate the average information gain \newline $\overline{IG}=(\sum IG)/K$
+        \STATE Choose the features $F_{IG}=\{f|IG_{f} > \overline{IG}\}$
         \STATE Sort the features according to $IGR$
         \RETURN $F''$
         \end{algorithmic}
 \end{algorithm}
 
-Now our feature ranking algorithm is introduced in Algorithm \ref{alg:feature-ranking}. We consider the information gain and information gain ratio simultaneously. First we calculate the information gain of all features which has been clustered by Algorithm \ref{alg:clustering} and \ref{alg:find-cluster-center}. Then we calculate the average information gain and sort them by their information gain ratio. Finally we select top $K$ features to compose new feature set. Here we set $K=10$. In different anomaly detection scenarios, the value of $K$ should be chosen on demand.
+Our feature ranking algorithm is introduced in Algorithm \ref{alg:feature-ranking}. We consider the information gain and information gain ratio simultaneously. First we calculate the information gain of all features which has been clustered by Algorithm \ref{alg:clustering} and \ref{alg:find-cluster-center}. Then we calculate the average information gain and sort them by their information gain ratio. Finally we select top $K$ features to compose new feature set. Here we set $K=10$. For different classification scenarios, the value of $K$ should be chosen on demand.
 
-\subsection{Summary of proposed algorithms}
+\section{Analysis of proposed methods}
+\label{sec:analysis}
 
-In this subsection, we summarize the proposed algorithm in a higher perspective. The complete algorithm is shown in Algorithm \ref{alg:complete-algorithm}.
-Since we have selected all features we need to determine whether a flow is an attack. Furthermore we want to detect detailed attack types. We choose C4.5 decision tree\cite{quinlan2014c4} as our classification algorithm. C4.5 decision tree uses information gain ratio to classify data instances. The implementation of decision tree algorithms is beyond the scope of this article. However, our method in fact previously complete the feature selection process of decision tree, so the tree classifier can use our result and speed the training process.
+\subsection{Time complexity analysis}
 
-\begin{algorithm}
-    \caption{Complete algorithm of proposed scheme}
-    \label{alg:complete-algorithm}
-    \begin{algorithmic}[1]
-        \REQUIRE ~~\\
-            Data set $D$ of 20\% randomly sampled, labels $L$, distance threshold $\delta$, number of features to be seleced $K$.
-        \ENSURE ~~\\
-            A feature list $F''=\{f''_1, f''_2, \ldots, f''_K\}$ and decision tree model $M_T$.
-        \STATE Drop all rows with missing values in $D$.
-        \STATE Drop all columns with zero-variance in $D$.
-        \STATE Encode all labels in $L$ to numeric values.
-        \STATE Clustering all features using Algorithm \ref{alg:clustering}. Get all clusters $C$.
-        \STATE Find centers in every clusters using Algorithm \ref{alg:find-cluster-center}. Get $F'$.
-        \STATE Sort all features in $F'$ using Algorithm \ref{alg:feature-ranking}. Get $F''$.
-        \STATE Split the data subset $D''$ with features in $F''$ into training set $D''_{\text{train}}$ and test set $D''_{\text{test}}$.
-        \STATE Train the classification model $M_T$ using decision tree algorithm with $D''_{\text{train}}$.
-        \STATE Test the classification effect using $D''_{\text{test}}$, and generate metrics $Acc$, $Pre$, $Rec$, $F_1$.
-        \RETURN $F''$, $M_T$.
-    \end{algorithmic}
-\end{algorithm}
+Assume that the number of samples is $M$, and the data set has $N$ features. According to Algorithm \ref{alg:clustering} and Algorithm \ref{alg:compare-and-join}, as the number of feature clusters grows, each feature needs to iterate through $K$ clusters to find its own attribution. In addition, when a feature (point) enters a cluster, it iterate through each point of the cluster to measure the distance between this point and other points. Thus, the time complexity of clustering algorithm is $O(KN^2)$. 
 
-\subsection{Analysis of the Proposed Algorithm}
+After the clustering procedure is completed, Algorithm \ref{alg:find-cluster-center} finds every cluster center as representative. Time complexity of this algorithm is $O(K)$, where $K$ is the number of generated clusters. 
 
-Our method is one kind of feature selection algorithm. It is different from dimensionality reduction algorithms like PCA\cite{PCA1987}. PCA transforms the original data into a set of linearly independent representations of each dimension by linear transformation to extract the main linear components of the data, while feature selection methods do not transform the data. It just chooses the key features which can provide the most information about the data. The data transformed by PCA will lose their explanation of real meaning, while feature selection algorithms can keep the real meaning of every reserved features. Chandrashekar et.al. \cite{Chandrashekar2014} pointed out that feature selection methods must not be compared with dimension reduction methods. Therefore we cannot compare the proposed scheme with PCA by experiments.
+After cluster centers are collected, Algorithm \ref{alg:feature-ranking} ranks these cluster centers using information gain and gain ratio. This procedure implies calculating information entropy. If there are $N$ samples in the dataset, the time complexity of computing information entropy is $O(NG)$, where $G$ is the range of values taken from the data. The total time complexity of ranking process is $O(kNG)$ for $k$ representative features.
+
+\subsection{Comparison with PCA}
+
+Our method is one kind of feature selection algorithm. It is different from dimensionality reduction algorithms like PCA\cite{PCA1987}. PCA transforms the original data into a set of linearly independent representations of each dimension by linear transformation to extract the main linear components of the data, while feature selection methods do not transform the data. It just chooses the key features which can provide the most information about the data. The data transformed by PCA will lose their explanation of real meaning, while feature selection algorithms can keep the real meaning of every reserved features. Chandrashekar \emph{et~al.} pointed out that feature selection methods must not be compared with dimension reduction methods \cite{Chandrashekar2014}. Therefore we cannot compare the proposed scheme with PCA by experiments.
 
 Meanwhile, our proposed method includes some characteristics of PCA. First, we calculate the covariance and correlation coefficient of all feature vectors, which is also used in calculation of PCA. Second, the features selected by our method are orthogonal and PCA do the same thing. Last but not least, every component generated by PCA have maximum variance, and our method contains the similar step. But in our method, the features with small variance are filtered.
 
-\section{Experiment results}
-\label{sec:evaluation}
+\section{Experiment Results}
+\label{sec:experiments}
 
-In this section, the experiments and evaluation results are shown. First we describe the experiment setup. Then we list selected feature by our algorithm and explain why these feature are selected. Next, since the distance threshold $\delta$ is a changeable parameter, we describe how the numbers of clusters are impacted by different distance threshold. Further, we compare the training time and classification metrics including accuracy, precision, recall and F1-score between our method and the full original data set, as well as our method and benchmark method respectively. The benchmark method is Select-K-Best method using chi-square function, denoted as SKB-chi2 method. Finally we illustrate and explain the confusion matrix of our prediction results.
+The performance of our methods and mainstream feature selection methods is evaluated by using 4 different network intrusion detection datasets. They are NSL-KDD \cite{nsl-kdd}, Kyoto2006+ \cite{kyoto2006}, UNSW-NB15 \cite{UNSWNB2015} and CIC-IDS-2018 \cite{CIC-IDS-2018}. 
+Table \ref{tab:datasets} provides a summary of the datasets, where \emph{\#samples} denotes the number of data samples, \emph{\#features} denotes the number of features, and \emph{\#classes} denotes the number of classes. 
+In Kyoto2006+ dataset, we randomly choose 40000 samples in the full dataset in 2015 Jan. 
+To evaluate the generalization of our mechanism, we split 20\% of Kyoto2006+ and CIC-IDS-2018 respectively as test sets, while the other 2 dataset have their own test sets.
 
-\subsection{Experiment Setup}
-
-All experiments are running on a quad-core Intel PC with 2.90GHz CPU and 16 GB of memory. Our algorithms are implemented in Python 3.7 and the benchmark method is implemented in a Python library scikit-learn\cite{sklearn}. We investigate the impact of distance thresholds and feature spaces on the number of clusters and classification results.
-
-\begin{itemize}
-    \item We investigate the effect of different threshold $\delta$ on the number of clusters, then explain how to choose best threshold to improve the classification metrics best.
-    \item We compare the training time and classification metrics of this method and the naive method, respectively. In the naive method, the data set is not processed, and all features are used for model traning and anomaly detection.
-    \item We compare the training time and classification metrics of the features selected by the proposed algorithm and by SKB-chi2 respectively on the decision tree classifier under the condition of the same scale of features.
-\end{itemize}
-
-The related classification metrics including accuracy(Acc), precision(Pre), recall(Rec) and F1-score($F_1$). Their definitions are listed as follows:
-
-\begin{itemize}
-    \item \textbf{Accuracy}. In classification problems, we denote $TP$ as true positve prediction, $FP$ as false positive prediction, $TN$ as true negative prediction and $FN$ as false negative prediction. The accuracy is defined as the ratio of $TP+TN$ in all test instances, which is
-    \begin{equation}
-        \text{Acc}=\frac{TP+TN}{TP+TN+FP+FN}
-    \end{equation}
-    which means the all true instances classified in all test instances.
-    \item \textbf{Precision}. The precision is defined as the ratio of $TP$ in all positive instances classified by the model, which is
-    \begin{equation}
-        \text{Pre} = \frac{TP}{TP+FP}
-    \end{equation}
-    which means the all true positive instances classified in all positve instances.
-
-    \item \textbf{Recall}. The recall is defined as the ratio of $TP$ in all real positive instances, which is
-    \begin{equation}
-        \text{Rec} = \frac{TP}{TP+FN}
-    \end{equation}
-    
-    \item \textbf{F1-score}. The F1-score is defined as the harmonic average of precision and recall.
-    \begin{equation}
-        F_1 = \frac{2}{\frac{1}{\text{Pre}} + \frac{1}{\text{Rec}}}
-    \end{equation}
-    which is a trade-off between the precision and recall.
-\end{itemize}
-
-\subsection{Selected Feature subset}
-
-Table \ref{tab:selected-features} shows the features selected by our method and their descriptions. Notice that although we set $K=10$ for our feature ranking algorithm, the selected features are not same in all split data set. Because randomicity exists when we build the split data subset. Here we use the union of all selected feature subsets. From Table \ref{tab:selected-features} we make the following observations:
-
-\begin{itemize}
-	\item The sizes of packets are important. In the top 10 important features, there are 4 features about packet sizes. Considering the MTU of an IP network, a flow shouldn’t contain too large packets. If the flow meter observes a flow contain large packets, the probability that this stream is an attack stream will be high.
-    \item Another important feature type is the count of packets. In benign flows, the number of packets often small because current network services intend to use short connection to complete the interaction with each other, in order to not occupy the bandwidth resources of the network. However, the attackers intend to send large amounts of packets to exhaust the connection resources and prevent connection from normal users.
-    \item Time-related features are also important. As we mentioned before, benign services intend to use short connection, while attackers may use long connection. A typical attack is to control the interval of any two flows which is a little shorter than the TCP waiting time. It prevents the TCP connection closing and finally exhaust the connection resources. In practise, time-related features should be considered with the count of packets together.
-\end{itemize}
-
-\begin{table}[!htpb]
-    \caption{Selected Features and Their Description}
-    \label{tab:selected-features}
-    \centering
-    \begin{tabular}{ll}
-    \toprule
-        Feature Name    & Description \\
-    \midrule
-    Backward Packets/s          & \tabincell{l}{Number of backward packets per  \\ second} \\
-    Forward Segment Size Min    & \tabincell{l}{Minimum segment size observed \\ in the forward direction} \\
-    Init Forward Win Byts   & \tabincell{l}{Number of bytes sent in initial  \\ window in the forward direction} \\
-    Flow Packets/s         & \tabincell{l}{flow packets rate that is number of \\ packets transferred per second} \\
-    ACK Flag Count        & Number of packets with ACK \\
-    Flow IAT Mean       & Average time between two flows \\
-    Backward IAT Max         & \tabincell{l}{Maximum time between two packets \\ sent in the backward direction} \\
-    Idle Mean           & \tabincell{l}{Mean time a flow was idle before \\ becoming active}\\
-    Forward Packet Length Min     & \tabincell{l}{Minimum size of packet in forward \\ direction} \\
-    Flow Duration       & Flow duration \\
-    Backward Packet Length Mean    & \tabincell{l}{Mean size of packet in backward \\ direction} \\
-    Packet Length Min         & Minimum length of a flow \\
-    Forward Packets/s          & \tabincell{l}{Number of forward packets per  \\ second} \\
-    Forward IAT Total         & \tabincell{l}{Totalal time between two packets \\ sent in the forward direction} \\
-    \bottomrule
-    \end{tabular}
-\end{table}
-
-\subsection{Investigate the effect of the distance threshold on the cluster numbers}
-
-In our algorithm, an important parameter is the distance threshold $\delta$. It takes effects on the number of clusters generated in Algorithm \ref{alg:clustering}. Figure \ref{fig:different-threshold} shows the result of number of generated clusters from 10 split data set files under different threshold $\delta$. We set $\delta$ from 0.7 to 0.95 with interval 0.05 between any two values. The average number of clusters are listed in Table \ref{tab:mean-cluster-number}. Here a trade-off exists about the number of clusters and the number of features in every cluster. If $\delta$ is set too small, the number of clusters will be small too, however many features with weak correlation will be merged in the same cluster and it will finally impact subsequent feature ranking and decision tree learning procedures. Meanwhile, a larger $\delta$ will produce too many clusters which contains only one feature, because the condition is too stricted to merge features. In our practice, setting $\delta$ between 0.8 and 0.9 is a better choicce.
-
-\begin{table}
-    \caption{Average number of clusters under different distance threshold}
-    \label{tab:mean-cluster-number}
-    \centering
-    \begin{tabular}{r|rrrrrr}
-        \toprule
-        $\delta$ & 0.7 & 0.75 & 0.8 & 0.85 & 0.9 & 0.95 \\
-        \midrule
-        $\bar{N}$ & 26 & 29 & 30 & 32 & 36 & 42 \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-\begin{figure}
-    \centering
-    \includegraphics[scale=0.5]{fig/Cluster-Number-in-diff-delta.pdf}
-    \caption{Number of clusters in 10 split data set under the effect of different distance threshould $\delta$. }
-    \label{fig:different-threshold}
-\end{figure}
-
-\subsection{Investigate the effect of scale of features on the training time and metrics}
-
-In this subsection we compare the training time of decision tree classifier and the metrics of classification effects between our method under different distance threshold $\delta$ and the full original data set.
-
-\subsubsection{Training Time}
-
-The training time in our method is the sum of running time of all algorithms mentioned before. The training time under different distance threshold $\delta$ is shown in Figure \ref{fig:training-time-with-full} and Table \ref{tab:training-time-all}.
-When we use the full original data set to train a decision tree classifier and then prune the tree to 10 decision nodes too, the training time is near 300 seconds averagely. Using our method, the training time decreases near 100 seconds averagely.
-Meanwhile this figure shows that the average training time increases slowly with $\delta$ increasing.
+Note that \#classes of NSL-KDD is 5(23) in trainning set and 5(38) in test set, because this data set have 5 types of class labels including Normal, DoS, Probe, U2R and R2L. The number in bracket is the total number of sub types of class labels.
 
 \begin{table}[!htbp]
     \centering
-    \caption{Training Time comparing to full data set and chi-square method}
-    \label{tab:training-time-all}
-    \begin{tabular}{lr}
+    \caption{Datasets Description}
+        \begin{tabular}{lrrrr}
         \toprule
-        dataset & Training Time(s) \\
+        Data set                    & \#samples & \#features & \#classes & File size(MB) \\
         \midrule
-        $\delta=0.7$ & 264.70 \\
-        $\delta=0.75$ & 266.21 \\
-        $\delta=0.8$ & 265.12 \\
-        $\delta=0.85$ &  267.21 \\
-        $\delta=0.9$ &   269.39 \\
-        $\delta=0.95$ & 269.89 \\
-        Full data set & 308.14 \\
-        SKB-Chi2 & 203.36 \\
+        \cite{nsl-kdd}(Train)            & 125,973    & 41    & 5(23) & 18.2      \\
+        \cite{nsl-kdd}(Test)                           & 22,544     & 41    & 5(38) & 3.28      \\
+        \cite{kyoto2006}(2015 Jan)    & 7,225,298   & 24    & 2     & 2037.8    \\
+        \cite{kyoto2006}(Chosen)             & 40,000     & 24    & 2     & 7.06      \\
+        \cite{UNSWNB2015}(Train)       & 82,332     & 43    & 10    & 14.6      \\
+        \cite{UNSWNB2015}(Test)                         & 175,341    & 43    & 10    & 30.7      \\
+        \cite{CIC-IDS-2018}         & 32,275,300  & 76    & 15    & 12390.4   \\
         \bottomrule
-    \end{tabular}
-\end{table}
+        \end{tabular}%
+    \label{tab:datasets}%
+\end{table}%
 
+\subsection{Experiment Setup}
 
-\begin{figure}[!htpb]
+All expeirments are conducted on a PC with Intel Core i7-8550 CPU at 2.00GHz and 16GB RAM using Windows 10 OS. We use Python 3.7 with scikit-learn 0.22 \cite{sklearn} to implement our proposed mechanism. We divided 80\% of each data set as training sets and 20\% as test sets. Also, we run 10-fold cross-validation on the training set to find the most appropriate classifier parameters.
+
+\subsection{Effect of different distance threshold}
+
+According to Algorithm \ref{alg:clustering}, when the distance between two feature vectors is less than set threshold $\delta$ (i.e. larger than $\delta'$), the two feature vectors will be clustered. When different thresholds are selected, the number of generated clusters will also be different. Table \ref{tab:clustering-rate} shows the number of clusters generated by our algorithm on different data sets under different thresholds, represented by the number before the slash, and the number after the slash represents the original feature number after preprocessing.
+
+Figure \ref{fig:feature-reduction-rate} shows the feature reduction rate of different data sets under different thresholds. It can be seen that when the threshold value $\delta' = 0.95$, the feature reduction rate of all four data sets reaches the lowest. Meanwhile, in the four data sets, the feature reduction rate of CIC-IDS-2018 is the highest, indicating that there are a large number of feature vectors with correlation in this data set. The results show that the proposed feature selection algorithm is very effective for network traffic data extracted from the traffic capture tool. However, if the data set has been preprocessed (such as NSL-KDD and Kyoto2006+), the proposed method is of limited effectiveness.
+
+\begin{table*}[htbp]
     \centering
-    \includegraphics[scale=0.4]{fig/training-time-all.pdf}
-    \caption{Training Time comparison with full original data set}
-    \label{fig:training-time-with-full}
-\end{figure}
-
-\subsubsection{Metrics}
-
-The four metrics of our methods under different $\delta$ is shown in Figure , along with the metrics of the model trained on full original data set. The result is shown in Figure \ref{fig:metrics-full} and Table \ref{tab:metric-full}. The average accuracy of our method is 97.94\%, which is a little higher than the accuracy on full data set. The average precision, recall and F1-score are 79.46\%, 80.73\% and 79.33\% respectively. They are all higher than the results on full data set.
-
-The result proved that the feature selected by our method can help improving performance of decision tree classifier comparing with using tree classifier directly on the full original data set.
-
-\begin{table*}
-    \centering
-    \caption{The metrics of different $\delta$ and full data set.}
-    \label{tab:metric-full}
-    \begin{tabular}{lrrrr}
+    \caption{Feautre clustering rate under different distance thresholds.}
+    \begin{tabular}{lrrrrrrrr}
         \toprule
-        dataset & Accuracy(\%) & F1-Score(\%) & Precision(\%) & Recall(\%) \\
+        Data set & $\delta'=0.60$ & $0.65$ & $0.70$ & $0.75$ & $0.80$ & $0.85$ & $0.90$ & $0.95$ \\
         \midrule
-            $\delta=0.7$ &  97.9604 & 79.0699 & 80.1735 & 79.0867 \\
-            $\delta=0.75$ &	97.9297 & 80.2657 & 81.9095 & 79.6229 \\
-            $\delta=0.8$ &	97.9104 & 80.2791 & 81.1272 & 80.3653 \\
-            $\delta=0.85$ &	97.9558 & 79.3655 & 80.7983 & 79.0457 \\
-            $\delta=0.9$ &  97.9557 & 78.9994 & 80.3196 & 78.6552 \\
-            $\delta=0.95$ &	97.9489 & 78.8134 & 79.9506 & 79.2532 \\
-            Full data set &	97.1315 & 78.0325 & 80.2580 & 77.3223 \\
-            SKB-Chi2 & 94.2846 & 72.1371 & 68.7105 & 69.1960 \\
+        NSL-KDD & 40/63 & 42/63 & 42/63 & 45/63 & 48/63 & 51/63 & 53/63 & 54/63 \\
+        kyoto2006+ & 23/36 & 24/36 & 25/36 & 26/36 & 30/36 & 30/36 & 32/36 & 33/36 \\
+        UNSW-NB15 & 31/60 & 33/60 & 35/60 & 39/60 & 41/60 & 42/60 & 44/60 & 49/60 \\
+        CIC-IDS-2018 & 20/70 & 21/70 & 23/70 & 26/70 & 29/70 & 33/70 & 36/70 & 43/70 \\
         \bottomrule
-    \end{tabular}
-\end{table*}
+    \end{tabular}%
+    \label{tab:clustering-rate}%
+\end{table*}%
 
-\begin{figure}[!htpb]
+
+\Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.35]{figs/feature-reduction-rate.pdf}{Feature reduction rate with different distance threshold $\delta$. \label{fig:feature-reduction-rate}}
+
+\subsection{Comparison with different feature selection methods}
+
+\subsubsection{Trainning Time Comparison with different FS methods}
+
+Table \ref{tab:training-time} shows the training time (ms) of C4.5 Decision Tree (DT) \cite{quinlan2014c4} on different data sets with different FS methods, where the first column is the training time on the full data set without feature selection, and the last columns is our proposed CBFS mechanism. CBFS reaches shortest training time on NSL-KDD(multiclass), CIC-IDS-2018 (both on binary and multiclass), and second shortest training time on the other data sets. Considering the size of the data sets and the randomness of the algorithms, this small time loss is acceptable. The training time results prove that our proposed CBFS mechanism can decrease the training time effectively, especially for large data sets.
+
+\begin{table*}[htbp]
     \centering
-    \includegraphics[scale=0.35]{fig/metrics-full.pdf}
-    \caption{The metrics including accuracy, precision, recall and F1-score of the data subset with different $\delta$ and the full data set.}
-    \label{fig:metrics-full}
-\end{figure}
+    \caption{Training Time (ms) for different data sets, where our proposed CBFS can reach shortest or second shortest training time.}
+    \begin{tabular}{lrrrrrrr}
+        \toprule
+        Data set & \multicolumn{1}{l}{Full dataset} & \multicolumn{1}{l}{Chi2} & \multicolumn{1}{l}{ANOVA-F} & \multicolumn{1}{l}{Mutual Info} & \multicolumn{1}{l}{Random Forest} & \multicolumn{1}{l}{RFE} & \multicolumn{1}{l}{CBFS} \\
+        \midrule
+        NSL-KDD(binary) & 724   & 249   & \textbf{153} & 233   & 216   & 240   & 186 \\
+        NSL-KDD(multiclass) & 806   & 319   & 236   & 405   & 344   & 307   & \textbf{183} \\
+        Kyoto2006+ & 123   & 47    & \textbf{18.6} & 69.8  & 76.9  & 77.1  & 42.1 \\
+        UNSW-NB15(binary) & 1,250  & 701   & \textbf{199} & 486   & 332   & 271   & 256 \\
+        UNSW-NB15(multiclass) & 2,210  & 1,250  & 89.2  & 723   & 298   & 351   & 253 \\
+        CIC-IDS-2018(binary) & 42,500 & 13,700 & 2,310  & 3,510  & 4,250  & 8,720  & \textbf{1,290} \\
+        CIC-IDS-2018(multiclass) & 52,000 & 17,100 & 7,300  & 20,600 & 17,100 & 8,200  & \textbf{1,760} \\
+        \bottomrule
+        \end{tabular}%
+    \label{tab:training-time}%
+\end{table*}%
 
-\subsection{Investigate the effect of different feature space at the same scale on training time and metrics}
+\subsubsection{Classification Metrics Comparison}
 
-\subsubsection{Training Time}
+Table \ref{tab:accuracy} shows the accuracy of decision tree classifier with different feature selection methods. Our proposed mechanism reaches the best accuracy on NSL-KDD (binary) and UNSW-NB15 (binary). Although CBFS does not always achieve the best accuracy, the difference between it and the best accuracy is acceptable.
 
-In this experiment, we compare the training time and metrics of our method and SKB-chi2 method in the same size of feature set, in other words the number of features are both set to 10 in these two methods.
-
-The training time comparison is shown in Figure \ref{fig:training-time-with-chi2} and also listed in Table \ref{tab:training-time-all}. The table and figure shows that our average training time is longer than the chi-square method performs. The chi-square method selects $n$ features with the highest values for the test chi-squared statistic from input data $X$. However, it only considers whether every single feature is correlated with the class label instead of considering the correlation between these features, which makes the training time lower than our methods.
-As a result, the selected feature subset may contain features with inner relationship, which may bring the redundant information in the model. While our method can effectively eliminate the redundant information.
-
-\begin{figure}[!htpb]
+\begin{table*}[htbp]
     \centering
-    \includegraphics[scale=0.4]{fig/training-time-chi2.pdf}
-    \caption{Training Time comparison with Select-K-Best method based on $\chi^2$ function.}
-    \label{fig:training-time-with-chi2}
-\end{figure}
+    \caption{Classification accuracy for different data sets with different FS methods.}
+    \begin{tabular}{lrrrrrrr}
+        \toprule
+        datasets & \multicolumn{1}{l}{Full dataset} & \multicolumn{1}{l}{Chi2} & \multicolumn{1}{l}{ANOVA-F} & \multicolumn{1}{l}{Mutual Info} & \multicolumn{1}{l}{Random Forest} & \multicolumn{1}{l}{RFE} & \multicolumn{1}{l}{CBFS} \\
+        \midrule
+        NSL-KDD(binary) & 0.7775  & 0.7640  & 0.7318  & 0.7768  & 0.7461  & 0.7563  & \textbf{0.7848} \\
+        NSL-KDD(multiclass) & \textbf{0.7700} & 0.7547  & 0.6856  & 0.7329  & 0.7363  & 0.7411  & 0.7538  \\
+        Kyoto2006+ & 0.8896  & 0.9660  & 0.7750  & 0.9557  & 0.9690  & \textbf{0.9714} & 0.9627  \\
+        UNSW-NB15(binary) & 0.8960  & 0.8924  & 0.8559  & 0.9010  & 0.8869  & 0.8948  & \textbf{0.9015} \\
+        UNSW-NB15(multiclass) & 0.7412  & 0.7418  & 0.6681  & \textbf{0.7581} & 0.7474  & 0.7521  & 0.7550  \\
+        CIC-IDS-2018(binary) & 0.9661  & 0.9467  & 0.9082  & \textbf{0.9700} & 0.9687  & 0.9650  & 0.9650  \\
+        CIC-IDS-2018(multiclass) & 0.9498  & 0.8568  & 0.9476  & \textbf{0.9509} & 0.9508  & 0.9484  & 0.9487  \\
+        \bottomrule
+    \end{tabular}%
+    \label{tab:accuracy}%
+\end{table*}%
 
-\subsubsection{Metrics}
+\subsubsection{Cost-performance ratio Comparison}
 
-The classification metrics comparison is shown in Figure\ref{fig:metrics-chi2} and Table \ref{tab:metric-full}. The figure shows that the metrics of our method are all better than the chi-square funtion. Although the training time is longer, an advantage of our method is that it consider more correlations between any two features comparing with only considering the relationship between any single feature and the class label. Therefore, the experimental results show that our method can better determine the statistical law of traffic when a network attack occurs.
+We use the cost-performance ratio function to compare the comprehensive performance of our proposed CBFS method and other feature selection methods. The cost performance function (CP) is defined as
 
-\begin{figure}[!htpb]
+\begin{equation}
+    \text{Cost-Performance} = \frac{\text{Accuracy}}{\text{Training Time}}
+\end{equation}
+
+To make the comparison of cost-performance more clearly visible, we normalized the cost-performance to the range $[0, 1]$, which makes the CP values can be compared.
+
+\Figure[!htpb](topskip=0pt, botskip=0pt, midskip=0pt)[scale=0.31]{figs/cp.pdf}{Cost-performance ratio for different feature selection methods. \label{fig:cost-performance}}
+
+Figure \ref{fig:cost-performance} shows the comaprison of cost-performance for different feature selection methods. Our proposed CBFS mechanism reaches the best cost-performance on CIC-IDS-2018 and NSL-KDD (multiclass), and reaches the second best cost-performance on NSL-KDD (binary), Kyoto2006 and UNSW-NB15 (binary). 
+Figure \ref{fig:cost-performance} shows that our proposed mechanism increases more than 70\% in terms of cost-performance to the benchmark methods.  
+Consider Table \ref{tab:training-time} and Table \ref{tab:accuracy}, although ANOVA-F reaches the better CP value than CBFS on a part of data sets, the accuracy on the subset selected by ANOVA-F is lower. In practical applications, we are more inclined to choose the feature selection method that makes the classification accuracy higher, rather than a shorter training time. Therefore, our method is still effective for solving feature selection in network intrusion detection.
+
+\subsection{Discussion}
+
+\begin{table*}[htbp]
     \centering
-    \includegraphics[scale=0.35]{fig/metrics-chi2.pdf}
-    \caption{The metrics of the data subset with different $\delta$ and the SelectKBest method based on $\chi^2$ function.}
-    \label{fig:metrics-chi2}
-\end{figure}
+    \caption{Feature subset overlap with different methods on different data sets.}
+    \begin{tabular}{lrrrrr}
+    \toprule
+    Data Set & \multicolumn{1}{l}{CBFS-Chi2(\%)} & \multicolumn{1}{l}{CBFS-F-test(\%)} & \multicolumn{1}{l}{CBFS-Mutual Info(\%)} & \multicolumn{1}{l}{CBFS-Random Forest(\%)} & \multicolumn{1}{l}{CBFS-RFE(\%)} \\
+    \midrule
+    NSL-KDD & 15.38  & 26.92  & 30.77  & 30.77  & 23.08  \\
+    Kyoto2006 & 47.37  & 42.11  & 47.37  & 47.37  & 42.11  \\
+    UNSW-NB15 & 12.90  & 3.23  & 22.58  & 12.90  & 9.68  \\
+    CIC-IDS-2018 & 5.41  & 8.11  & 13.51  & 13.51  & 13.51  \\
+    \bottomrule
+    \end{tabular}%
+    \label{tab:feature-overlap}%
+\end{table*}%
 
-\begin{table*}
+
+
+\begin{table}[htbp]
     \centering
-    \begin{threeparttable}[b]
-        \caption{Confusion Matrix of classification results}
-        \label{tab:confusion-matrix}
-        \begin{tabularx}{\textwidth}{@{}l*{15}{C}c@{}}
-            \toprule
-            Labels & Benign & Bot & Web\tnote{1} & XSS\tnote{2} & HOIC\tnote{3} & LOIC-UDP\tnote{4} & LOIC-HTTP\tnote{5} & Slow-HTTPTest\tnote{6} & Hulk\tnote{7} & Infilter-ation & Slow-loris\tnote{8} & SSH\tnote{9} & Golden-Eye\tnote{10} & SQL\tnote{11} & FTP\tnote{12} \\
-            \midrule
-            Benign & 5320195 & 1135 & 65 & 22 & 10 & 0 & 185 & 33 & 17 & 8 & 76 & 3 & 34205 & 13 & 11 \\
-            Bot & 626 & 113842 & 0 & 7 & 0 & 0 & 4 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
-            Web & 66 & 0 & 161 & 0 & 0 & 0 & 2 & 0 & 0 & 0 & 0 & 0 & 1 &  10 & 0 \\
-            XSS & 20 & 9 & 0 & 57 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 &  4 & 0 \\
-            HOIC & 3 & 0 & 0 & 0 & 274397 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
-            LOIC-UDP & 2 & 0 & 0 & 0 & 0 & 537 & 151 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
-            LOIC-HTTP & 164 & 7 & 0 & 0 & 0 & 160 & 230148 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\
-            SlowHTTPTest & 6 & 0 & 0 & 0 & 0 & 0 & 0 & 16567 & 2 & 0 & 25 & 0 & 0 & 0 & 0 \\
-            Hulk & 11 & 0 & 0 & 0 & 0 & 0 & 0 & 3 & 184755 & 0 & 0 & 0 & 1 & 0 & 0 \\
-            Infilteration & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 29100 & 0 & 26860 & 0 & 0 & 0 \\
-            Slowloris & 102 & 0 & 0 & 0 & 0 & 0 & 0 & 18 & 1 & 0 & 4279 & 0 & 0 & 0 & 0 \\
-            SSH & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 8747 & 0 & 68593 & 0 & 0 & 0 \\
-            GoldenEye & 58771 & 8 & 0 & 0 & 0 & 0 & 1 & 1 & 0 & 3 & 0 & 1 & 5408 & 1 & 0 \\
-            SQL & 17 & 1 & 2 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 10 & 0 \\
-            FTP & 13 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 9 & 0 & 0 & 75016 \\
-            \bottomrule
-        \end{tabularx}
-        \begin{tablenotes}
-            \item[1] BruteForce-Web
-            \item[2] BruteForce-XSS
-            \item[3] DOS attacks-HOIC
-            \item[4] DOS attacks-LOIC-UDP
-            \item[5] DOS attacks-LOIC-HTTP
-            \item[6] DOS attacks-SlowHTTPTest
-            \item[7] DOS attacks-Hulk
-            \item[8] DOS attacks-Slowloris
-            \item[9] SSH-BruteForce
-            \item[10] DOS attacks-GoldenEye
-            \item[11] SQL Injection
-            \item[12] FTP-BruteForce
-        \end{tablenotes}
-    \end{threeparttable}
-\end{table*}
+    \caption{Top 10 selected features in different data sets. }
+    \begin{tabular}{ll}
+        \toprule
+        \multicolumn{1}{l}{Data set} & Selected Features (Top 10) \\
+        \midrule
+        \multirow{10}[0]{*}{NSL-KDD} & count  \\
+            & src\_bytes  \\
+            & dst\_host\_srv\_count  \\
+            & dst\_bytes \\
+            & same\_srv\_rate  \\
+            & dst\_host\_diff\_srv\_rate  \\
+            & diff\_srv\_rate \\
+            & dst\_host\_same\_srv\_rate  \\
+            & serror\_rate  \\
+            & flag\_SF \\
+        \hline
+        \multirow{10}[0]{*}{Kyoto2006} & is\_other \\
+            & dst\_bytes  \\
+            & srv\_serror\_rate  \\
+            & is\_dns  \\
+            & src\_bytes \\
+            & dst\_host\_count  \\
+            & dst\_host\_serror\_rate  \\
+            & duration \\
+            & dst\_host\_srv\_count  \\
+            & count \\
+        \hline
+        \multirow{10}[0]{*}{UNSW-NB15} & smean \\
+            & sload \\
+            & ct\_dst\_sport\_ltm \\
+            & is\_dns \\
+            & sbytes \\
+            & rate \\
+            & p\_udp \\
+            & sttl \\
+            & ct\_dst\_src\_ltm \\
+            & dbytes \\
+        \hline
+        \multirow{9}[0]{*}{CIC-IDS-2018} & Init Fwd Win Byts \\
+            & Flow Duration \\
+            & Flow IAT Max \\
+            & Flow Pkts/s \\
+            & Fwd Seg Size Min \\
+            & Fwd Pkts/s \\
+            & Fwd IAT Mean \\
+            & Bwd Pkts/s \\
+            & Fwd Header Len \\
+        \bottomrule
+        \end{tabular}%
+    \label{tab:selected-features}%
+\end{table}%
 
-\subsection{Confusion Matrix}
+From the experimental results, although our proposed CBFS method is not always the best in terms of time or classifier performance metrics such as accuracy individually, it achieves satisfactory results when we use the metric of cost-performance ratio. This shows that our method is able to select the features which most influenced the class labels. From Table \ref{tab:feature-overlap}, the features selected by our proposed method highly overlap those using mutual info and Random Forest, and lowly overlap the features selected by Chi2 test, ANOVA-F test and RFE, indicating that our method can reach better effect without using the recursive algorithms.
 
-Finally we analyze the confusion matrix of our method. The confusion matrix is shown in Tabel \ref{tab:confusion-matrix}. We add the confusion matirx of all split data set. The matrix shows that our method can mainly classify the data into correct class label. However, there are still many false positive and false negative instances. The most severe miss happens on the label ``DOS attacks-GoldenEye'' and ``Infilteration''. The flow patterns of these two situation performs similar with benign flow pattern so that our method could not discriminate them properly. The flow patterns of these two situation should be further study and new method should be proposed to detect them.
+As seen in Figure \ref{fig:cost-performance}, the F-test algorithm achieves the highest CP value on four data sets. However, the CP value is strongly influenced by cost (in our context, cost refers to training time). The F-test determines only the linear relationship between features and class labels. In our scenario, however, we argue that there is no apparent linear relationship between features and class labels, which creates a contradiction. In this way, we believe that in the scenario of this paper, the F-test does not select critical features well, which is the reason the actual accuracy of the F-test is low. Therefore, a feature selection algorithm cannot simply be evaluated by a single metric such as CP value, training time or accuracy, but should be compared in a comprehensive manner.
+
+Next, we discuss the specific features chosen by our proposed algorithm, as shown in Table \ref{tab:selected-features}. Among the features common to all datasets, we find that the number of bytes and packets sent by the source/destination appear with high probability, and the flow duration is often selected. This means that abnormal source/destination packet number, abnormal number of source/destination bytes and abnormal flow duration result in abnormal flow with higher probability. This result can better guide IDS developers in selecting the features needed for intrusion detection. However, even though detection using these features yields higher accuracy, we still see many false alarms. Considering the data distribution of normal/abnormal traffic, it is indeed difficult to find a perfect classification that completely separates these two types of traffic, which needs further study.
+
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-Traditional network anomaly detection methods need to consider a large number of traffic features. 
-But this will cause a dimensional disaster problem, which will seriously reduce the efficiency and accuracy of the anomaly detection method. 
-In this paper, we propose a novel efficient network anomaly detection scheme, which uses feature selection methods to reduce the dimensions of traffic data and improves the efficiency and accuracy of detection. 
-The most important part of this method is the feature selection algorithm proposed in this paper. The algorithm contains two parts: feature clustering and feature ranking. The feature clustering algorithm uses correlation coefficients to merge features with correlated features into the same cluster. The feature ranking algorithm uses both information gain and gain ratio to select the most important features. Based on this, we use the C4.5 decision tree as a classifier to construct a network traffic anomaly detection model.
+Network traffic data can be high dimensional and features are usually highly redundant and correlative. 
+To reduce the redundancy and find the abnormal traffic flows effectively, we propose CBFS, a clustering-based feature selection mechanism and feature ranking algorithm based on information theory. 
+We define the distance between feature vectors in the datasets, cluster features whose distance less than threshold, and find the cluster centers as their representative. 
+Then we rank these cluster centers with weighted score based on information gain and gain ratio. 
+Our method reduces the initial input of a tree-based classification algorithm and removes the features with high correlation with others. 
 
-The experimental results show that on the CIC-IDS-2018 dataset, our proposed method can reduce the training time by about 100 seconds and improve the classification index by at least 1\%. Compared with the SKB-Chi2 method, with the same number of features, our method can improve the classification index by at least 3\%.
+Experiments are conducted with 4 different network intrusion detection datasets. 
+The feature reduction ratio of our proposed method ranges from about 20\% to more than 70\% under different thresholds. 
+Using the features chosen by the proposed mechanism, the cost-performance of classification is higher than other feature selection algorithms. 
+The results proves that our proposed feature selection mechanism is more efficient and reaches more accurate classification results. 
+In addition, this paper lists the most frequently selected features and discusses the reasons for the selection, which can guide IDS developers in choosing the features that are most beneficial for intrusion detection.
 
-In the future, we will continue to study the analysis of real-time network traffic data and the real-time detection model of network anomalies to improve the practicality of detection schemes.
+In the future, we will find a model to describe non-linear correlations between the features and take effort to improve accuracy in the case of multiclass scenarios. 
 
-% \bibliographystyle{IEEEtran}
-% % argument is your BibTeX string definitions and bibliography database(s)
-% \bibliography{bibtex/bib/mybib.bib}{}
+
 \begin{thebibliography}{00}
-    \bibitem{github-2015}
-    GitHub triumphant over its ‘largest ever’ cyber pummeling. [Online]. Available: \\ https://fortune.com/2015/04/03/github-ddos-china/
+    \bibitem{cisco-report}
+    Cisco Annual Internet Report (2018–2023) White Paper. [Online] \\ Available: https://www.cisco.com/c/en/us/solutions/collateral/executive- \\ perspectives/annual-internet-report/white-paper-c11-741490.html
+    
+    \bibitem{Hajisalem2018}
+    V. Hajisalem and S. Babaie, ``A hybrid intrusion detection system based on ABC-AFS algorithm for misuse and anomaly detection,'' \emph{Computer Networks}, vol. 136, pp. 37--50, 2018.
 
-    \bibitem{dyn-2016}
-    Read Dyn’s Statement on the 10/21/2016 DNS DDoS Attack. [Online]. Available: \\ https://dyn.com/blog/dyn-statement-on-10212016-ddos-attack/
+    \bibitem{rf2002}
+    A. Liaw and M. Wiener, ``Classification and Regression by random forest,'' \emph{R News}, vol. 2, no. 3, pp. 18--22, 2002.
 
-    \bibitem{wannacry-2017}
-    WannaCry ransomware attack. [Online]. Available: \\ https://en.wikipedia.org/wiki/WannaCry\_ransomware\_attack
+    \bibitem{gbdt2001}
+    J. H. Friedman, ``Greedy function approximation: a gradient boosting machine,'' \emph{The Annals of Statistics}, vol. 29, no. 5, pp. 1189--1232, 2001. 
 
-    \bibitem{Wang2020CS}
-    M. ~Wang, Y. ~Lu, and J. ~Qin, ``A Dynamic MLP-Based DDoS Attack Detection Method Using Feature Selection and Feedback,'' \emph{Computers \& Security}, to be published. DOI: 10.1016/j.cose.2019.101645.
+    \bibitem{Maza2018}
+    S. Maza and M. Touahria, ``Feature Selection Algorithms in Intrusion Detection System: A survey,'' \emph{KSII Transactions on Internet and Information Systems}, vol. 12, no. 10, pp. 5079--5099, 2018.
 
-    \bibitem{Urmila2017}
-    T.S. Urmila and R. Balasubramanian, ``A novel framework for intrusion detection using distributed collaboration detection scheme in packet header data,'' \emph{International Journal of Computer Networks and Communications}, vol. 9, no. 4, pp. 97--112, 2017.
+    \bibitem{Cai2018}
+    J. Cai, J. Luo, S. Wang, S. Yang, ``Feature Selection in Machine Learning: A New Perspective,'' \emph{Neurocomputing}, vol. 300, pp. 70--79, 2018.
 
-    \bibitem{MunaSulieman2017}
-    M.S. Al-Hawawreh, ``SYN Flood Attack Detection in Cloud Environment Based on TCP/IP Header Statistical Features,'' in \emph{Proceedings of International Conference on Information Technology}, pp. 236--243, 2017.
+    % \bibitem{Fleuret2004}
+    % F. Fleuret, ``Fast Binary Feature Selection with Conditional Mutual Information,'' \emph{Journal of Machine Learning Research}, vol. 5, pp. 1531--1555, 2004.
 
-    \bibitem{Anwer2018}
-    H.M. Anwer, M. Farouk and A. Ayman, ``A Framework for Efficient Network Anomaly Intrusion Detection with Features Selection,'' in \emph{Proceedings of 9th International Conference on Information and Communication Systems}, pp. 157--162, 2018.
+    % \bibitem{Law2004}
+    % M. H. C. Law, M. A. T. Figueiredo, and A. K. Jain, ``Sumultaneous Feature Selection and Clustering Using Mixture Models,'' \emph{IEEE Transactions on Pattern Analysis and Machine Intelligence}, vol. 26, no. 9, pp. 1154--1166, 2004.
 
-    \bibitem{UNSW-2015}
-    ``UNSW-NB15 dataset''. [Online]. Available: \\https://cloudstor.aarnet.edu.au/plus/index.php/s/\\2DhnLGDdEECo4ys?path=\%2F
+    % \bibitem{Qu2005}
+    % G. Qu, S. Hariri and M. Yousif, ``A New Dependency and Correlation Analysis for Features,'' \emph{IEEE Transactions on Knowledge and Data Engineering}, vol. 17, no. 9, pp. 1199--1207, 2005.
 
-    \bibitem{Fernandes2019}
-    G. Fernandes, J. Rodrigues, L. F. Carvalho, J. F. Al-Muhtadi and M.L. Proença, ``A comprehensive survey on network anomaly detection,'' \emph{Telecommunication Systems}, vol. 70, no. 3, pp. 447--489, 2019
+    \bibitem{Saeys2008}
+    Y. Saeys, T. Abeel and Y. V. Peer, ``Robust Feature Selection Using Ensemble Feature Selection Technique,'' in \emph{Machine Learning and Knowledge Discovery in Databases}, pp. 313--325, 2008.
 
-    \bibitem{Fernandes2015}
-    G. Fernandes, E.H.M. Pena, L.F. Carvalho, J. Rodrigues, M.L. Proença, ``Statistical, Forecasting and Metaheuristic Techniques for Network Anomaly Detection,'' in \emph{Proceedings of the ACM Symposium on Applied Computing}, pp. 701--707, 2015. 
+    \bibitem{Hsu2010}
+    H. Hsu and C. Hsieh, ``Feature Selection via Correlation Coefficient Clustering,'' \emph{Journal of Software}, vol. 5, no. 12, pp. 1371--1377, 2010.
 
-    \bibitem{Alsharafi2020}
-    W.M. Alsharafi, M.N. Omar, N.A. Al-Majmar and Y. Fazea, ``Normal Profile Updating Method for Enhanced Packet Header Anomaly Detection,'' \emph{Emerging Trends in Intelligent Computing and Informatics}, pp. 734--737, 2019.
+    \bibitem{Liu2011}
+    H. Liu, X. Wu and S. Zhang, ``Feature selection using hierarchical feature clustering,'' in \emph{International Conference on Information and Knowledge Management}, pp. 979--984, 2011.
 
-    \bibitem{Bajaj2013}
-    K. Bajaj and A. Arora, ``Dimension Reduction in Intrusion Detection Features Using Discriminative Machine Learning Approach,'' \emph{International Journal of Computer Science Issues}, vol. 10, no. 4, pp. 324--329, 2013.
+    \bibitem{Javed2012}
+    K. Javed, H. A. Babri, and M. Saeed, ``Feature Selection Based on Class-Dependent Densities for High-Dimensional Binary Data,'' \emph{IEEE Transactions on Knowledge and Data Engineering}, vol. 24, no. 3, pp. 465--477, 2012.
 
-    \bibitem{Kumar2016}
-    K. Kumar and J. S. Batth, ``Network Intrusion Detection with Feature Selection Techniques using Machine-Learning Algorithms,'' \emph{International Journal of Computer Applications}, vol. 150, no. 12, pp. 1--13, 2016.
+    \bibitem{Eid2013}
+    H. F. Eid, A. E. Hassanien, T. Kim and S. Banerjee, ``Linear Correlation-Based Feature Selection for Network Intrusion Detection Model,'' in \emph{International Conference on Security of Information and Communication Networks}, pp. 240--248, 2013.
+
+    \bibitem{Singh2015}
+    R. Singh, H. Kumar and R. K. Singla, ``An intrusion detection system using network traffic profiling and online sequential extreme learning machine,'' \emph{Expert System with Applications}, vol. 42, pp. 8609--8624, 2015.
 
     \bibitem{Wahba2015}
     Y. Wahba, E. ElSalamouny and G. ElTaweel, ``Improving the Performance of Multi-class Intrusion Detection Systems using Feature Reduction,'' \emph{International Journal of Computer Science Issues}, vol. 12, no. 3, pp. 255--262, 2015.
 
-    \bibitem{Kuar2018}
-    P. Kaur, P. Chaudhary, A. Bijalwan and A. Awasthi, ``Network Classification Using Multiclass Classifier,'' in \emph{Proceedings of International Conference on Advances in Computing and Data Sciences}, pp. 208-217, 2018.
+    \bibitem{Iglesias2015}
+    F. Iglesias and T. Zseby, ``Analysis of network traffic features for anomaly detection,'' \emph{Machine Learning}, vol. 101, pp. 59--84, 2015.
 
-    \bibitem{Beulah2015}
-    J. R. Beulah and D. ShaliniPunithavathani, ``Simple Hybrid Feature Selection (SHFS) for Enhancing Network IntrusionDetection with NSL-KDD Dataset,'' \emph{International Journal of Applied Engineering Research}, vol. 10, no. 19, pp. 40498--40505, 2015.
+    \bibitem{CANN2015}
+    W. Lin, S. Ke, C. Tsai, ``CANN: An intrusion detection system based on combining cluster centers and nearest neighbors,'' \emph{Knowledge-Based Systems}, vol. 78, pp. 13--21, 2015.
 
-    \bibitem{Ferriyan2017}
-    A. Ferriyan, A.H. Thamrin, K. Takeda and J. Murai, ``Feature selection using genetic algorithm to improve classification in network intrusion detection system,'' in \emph{Proceedings of International Electronics Symposium on Knowledge Creation and Intelligent Computing}, pp. 46--49, 2017.
+    \bibitem{Osanaiye2016}
+    O. Osanaiye, H. Cai, K. R. Choo, A. Dehghantanha, Z. Xu and M. Dlodlo, ``Ensemble-based multi-filter feature selection method for DDoS detection in cloud computing,'' \emph{EURASIP Journal on Wireless Communications and Networking}, 2016.
 
-    \bibitem{Shi2017}
-    H. Shi, H. Li, D. Zhang, C. Cheng and W. Wu, ``Efficient and robust feature extraction and selection for traffic classification,'' \emph{Computer Networks}, vol. 119, pp. 1--16, 2017.
+    \bibitem{Bostani2017}
+    H. Bostani and M. Sheikhan, ``Hybrid of binary gravitational search algorithm and mutual information for feature selection in intrusion detection system,'' \emph{Soft Computing}, vol. 21, no. 9, pp. 2307--2324, 2017.
 
-    \bibitem{Shi2018}
-    H. Shi, H. Li, D. Zhang, C. Cheng and X. Cao, ``An efficient feature generation approach based on deep learning and feature selection techniques for traffic classification,'' \emph{Computer Networks}, vol. 132, pp. 81--98, 2018.
+    \bibitem{Brahim2018}
+    A. B. Brahim and M. Limam, ``Ensemble feature selection for high dimensional data: a new method and a comparative study,'' \emph{Advances in Data Analysis and Classification}, vol. 12, no. 4, pp. 937--952, 2018.
 
-    \bibitem{Dong2017}
-    Y. Dong, J. Zhao and J. Jin, ``Novel feature selection and  classification of Internet video traffic based on a hierarchical scheme,'' \emph{Computer Networks}, vol. 119, pp. 102--111, 2017.
+    \bibitem{CorrCorr2019}
+    F. Gottwalt, E. Chang and T. Dillon, ``CorrCorr: A feature selection method for multivariate correlation network anomaly detection techniques,'' \emph{Computers \& Security}, vol. 83, pp. 234--245, 2019.
 
-    \bibitem{Cavusoglu2019}
-    U. Cavusoglu, ``A New Hybrid Approach for Intrusion Detection Using Machine Learning Methods,'' \emph{Applied Intelligence}, vol. 49, no. 7, pp. 2735--2761, 2019.
+    \bibitem{Selvakumar2019}
+    B. Selvakumar and M. Karuppiah, ``Firefly algorithm based feature selection for network intrusion detection,'' \emph{Computer and Security}, vol. 81, pp. 148--155, 2019.
 
-    \bibitem{Maza2018}
-    M. Sofiane and T. Mohamed, ``Feature selection algorithms in intrusion detection system: A survey,'' \emph{KSII Transactions on Internet and Information Systems}, vol. 12, no. 10, pp. 5079-5099, 2018.
-
-    \bibitem{cic2018}
-    I. Sharafaldin, A. H. Lashkari and A. A. Ghorbani, ``Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization,'' in \emph{Proceedings of International Conference on Information Systems Security and Privacy (ICISSP)}, pp. 108--116, 2018.
-
-    \bibitem{cicflowmeter}
-    CICFlowMeter. [Online]. Available: \\ https://www.unb.ca/cic/research/applications.html\#CICFlowMeter
+    \bibitem{Mazumder2012}
+    S. Mazumder, T. Sharma, R. Mitra, N. Sengupta and J. Sil, ``Generation of sufficient cut points to discretize network traffic data sets,'' in \emph{International Conference on Swarm, Evolutionary, and Memetic Computing}, pp. 528--539, 2012.
 
     \bibitem{Shannon1948}
     C.E. Shannon, ``A Mathematical Theory of Communication,'' \emph{Bell System Technical Journal}, vol. 27, no. 3, pp. 379--423, 1948.
 
-    \bibitem{quinlan2014c4}
-    J.R. Quinlan, ``C4.5: programs for machine learning,'' Elsevier, 2014.
+    \bibitem{RFE2002}
+    I. Guyon, J. Weston and S. Barnhill, ``Gene Selection for Cancer Classification using Support Vector Machines,'' \emph{Machine Learning}, vol. 46, pp. 389--422, 2002.
 
     \bibitem{PCA1987}
     S. Wold, K. Esbensen and P. Geladi, ``Principal component analysis,'' \emph{Chemometrics and Intelligent Laboratory Systems}, vol. 2, no. 1--3, pp. 37--52, 1987.
@@ -790,11 +703,24 @@ In the future, we will continue to study the analysis of real-time network traff
     \bibitem{Chandrashekar2014}
     G. Chandrashekar and F. Sahin, ``A survey on feature selection methods,'' \emph{Computers and Electrical Engineering}, vol. 40, pp. 16--28, 2014.
 
+    \bibitem{nsl-kdd}
+    M. Tavallaee, E. Bagheri, W. Lu, and A. Ghorbani, ``A Detailed Analysis of the KDD CUP 99 Data Set,'' in \emph{2009 IEEE symposium on computational intelligence for security and defense applications (CISDA)}, pp. 1--6, 2009.
+
+    \bibitem{kyoto2006}
+    Traffic Data from Kyoto University's Honeypots. [Online]. Available: \\ http://www.takakura.com/Kyoto\_data/
+
+    \bibitem{UNSWNB2015}
+    N. Moustafa and J. Slay, ``UNSW-NB15: a comprehensive data set for network intrusion detection systems (UNSW-NB15 network data set),'' in \emph{2015 Military Communications and Information Systems Conference (MilCIS)}, pp. 1--6, 2015.
+
+    \bibitem{CIC-IDS-2018}
+    I. Sharafaldin, A. H. Lashkari, and A. A. Ghorbani, ``Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization,'' in \emph{4th International Conference on Information Systems Security and Privacy (ICISSP)}, pp. 108--116, 2018.
+
     \bibitem{sklearn}
     scikit-learn: machine learning in Python. [Online]. Available: \\ https://scikit-learn.org/
 
+    \bibitem{quinlan2014c4}
+    J.R. Quinlan, ``C4.5: programs for machine learning,'' Elsevier, 2014.
 \end{thebibliography}
-
 
 \begin{IEEEbiography}[{\includegraphics[width=1in,height=1.25in,clip,keepaspectratio]{photo/jiewenmao.jpg}}]{Jiewen Mao}
     received the B.S. degree from the Department of Computer Science and Technology at East China Normal University, Shanghai, China, in 2014. He is currently pursuing his Ph.D. degree with the School of Computer Science and Technology at East China Normal University, Shanghai, China. His current research interests are in the area of anomaly detection of network traffic flow, including the Internet and IoT. He is also interested in machine learning techniques.
