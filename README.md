@@ -1,5 +1,5 @@
 # Hierarchical-Feature-Selection
-The manuscript of my paper
+The paper is published as [CBFS: A Clustering-Based Feature Selection Mechanism for Network Anomaly Detection](https://ieeexplore.ieee.org/document/9123904)
 
 ## Files
 
